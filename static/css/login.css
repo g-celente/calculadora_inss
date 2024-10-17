@@ -1,0 +1,107 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Open Sans", sans-serif;
+  }
+  
+  body {
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+    background-image: url(../assets/imagem-fundo.png) ;
+    background-size: cover;
+    background-position: 50%;
+  }
+  .form-container {
+    z-index: 2;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 50px;
+    border-radius: 30px;
+    border-color: #f87842;
+    width: 420px;
+    background-color: transparent; /* Fundo completamente transparente */
+    backdrop-filter: blur(3px);
+    z-index: 2;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  input {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    background-color: #f1f1f1;
+  }
+  
+  button {
+    padding: 10px 15px;
+    border-radius: 30px;
+    border: none;
+    background-image: linear-gradient(#256a8a, #3393c1);
+    border: solid 1px #256a8a;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 700;
+    align-self: center;
+    width: 160px;
+  }
+  
+  a {
+    color: rgb(0, 174, 255);
+    font-weight: 500;
+  }
+  
+  .titulo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .barra-horizontal {
+    background-color: #f87842;
+    height: 5px;
+    width: 210px;
+  }
+  
+  .campo-input {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .checkbox {
+    display: flex;
+    gap: 5px;
+    font-size: 14px;
+  }
+  
+  .esqueceu-senha {
+    text-align: center;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Cor preta com 50% de opacidade */  /* Coloca o overlay acima da imagem, mas abaixo do formulário */
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+  }

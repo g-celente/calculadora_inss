@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/registro.css') }}">
+</head>
+<body>
+  <div class="login-view-container">
+    <div class="overlay"></div> <!-- Adicionando overlay -->
+    <div class="form-container">
+      <form class="form" action="{{ url_for('register') }}" method="POST">
+        <div class="titulo">
+          <h2>Crie sua conta na GRP!</h2>
+          <div class="barra-horizontal"></div>
+        </div>
+
+        <div class="campo-input">
+          <label for="name">Nome</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Insira seu nome"
+            required
+          />
+          {% if error_name %}
+          <span class="invalid-feedback" role="alert">
+            <strong>{{ error_name }}</strong>
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="campo-input">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Insira seu email"
+            required
+          />
+          {% if error_email %}
+          <span class="invalid-feedback" role="alert">
+            <strong>{{ error_email }}</strong>
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="campo-input">
+          <label for="password">Senha</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Insira sua senha"
+            required
+          />
+          {% if error_password %}
+          <span class="invalid-feedback" role="alert">
+            <strong>{{ error_password }}</strong>
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="campo-input">
+          <label for="password_confirmation">Confirme sua senha</label>
+          <input
+            type="password"
+            id="password_confirmation"
+            name="password_confirmation"
+            placeholder="Confirme sua senha"
+            required
+          />
+          {% if error_password_confirmation %}
+          <span class="invalid-feedback" role="alert">
+            <strong>{{ error_password_confirmation }}</strong>
+          </span>
+          {% endif %}
+        </div>
+
+        <button type="submit">
+          <span>Cadastrar</span>
+        </button>
+
+        <span>
+          Já possui uma conta?
+          <a href="{{ url_for('login') }}" class="login-span-text"> Faça Login</a>
+        </span>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

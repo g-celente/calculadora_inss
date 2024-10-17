@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulação INSS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulação de Benefício INSS</h1>
+
+        <!-- Exibir mensagens flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="messages">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Formulário de cálculo de benefício -->
+        <form action="{{ url_for('calcular_beneficio') }}" method="POST">
+            <div class="form-group">
+                <label for="sexo">Sexo:</label>
+                <select name="sexo" id="sexo" required>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="salario_bruto">Salário Bruto:</label>
+                <input type="number" name="salario_bruto" id="salario_bruto" min="0" required>
+            </div>
+
+            <button type="submit">Calcular Benefício INSS</button>
+        </form>
+
+        <!-- Upload do CNIS -->
+        <h2>Upload do CNIS (PDF)</h2>
+        <form action="{{ url_for('upload_cnis') }}" method="POST" enctype="multipart/form-data">
+            <input type="file" name="cnis_pdf" accept=".pdf">
+            <button type="submit">Carregar CNIS</button>
+        </form>
+
+        <!-- Gráficos Plotly -->
+        <div id="grafico_inss" style="width:100%;height:400px;"></div>
+
+        <h2>Relatórios Disponíveis</h2>
+        <a href="{{ url_for('download_pdf') }}" target="_blank">Baixar Relatório INSS (PDF)</a><br>
+        <a href="{{ url_for('download_graph_pdf') }}" target="_blank">Baixar Gráfico (PDF)</a>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // Simulação de gráfico Plotly, semelhante ao Dash
+        var data = [{
+            x: ['Aposentadoria 1', 'Aposentadoria 2'],
+            y: [2000, 2500],
+            type: 'bar'
+        }];
+
+        var layout = {
+            title: 'Valor Benefício',
+            xaxis: { title: 'Alternativa' },
+            yaxis: { title: 'Valor' }
+        };
+
+        Plotly.newPlot('grafico_inss', data, layout);
+    </script>
+</body>
+</html>
