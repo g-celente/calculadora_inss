@@ -6,6 +6,54 @@ body {
     padding: 0;
 }
 
+#navbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#navicon {
+    font-size: 24px;
+    color: #fff;
+}
+
+#nav_list {
+    display: flex;
+    list-style: none;
+    align-items: center;
+    gap: 48px;
+    text-decoration: none;
+}
+
+.nav_item a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+}
+
+section {
+    padding: 28px 8%;
+}
+
+@media screen and (max-width: 1170px) {
+    #nav_list,
+    #navbar .btn-default {
+        display: none;
+    }
+}
+
+header {
+    padding: 28px 8%;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0; 
+    background-color: #FF5A1F;
+    z-index: 3;
+}
+
+
 .container {
     width: 90%;
     margin: 0 auto;
@@ -80,5 +128,5 @@ button:hover {
 
 /* Gráfico */
 #grafico_inss {
-    margin: 40px 0;
+    margin: 40px 0;
 }

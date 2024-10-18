@@ -8,14 +8,28 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <h1 style="margin: 0;">Simulação INSS</h1>
-        <div>
-            <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-        </div>
-    </div>
+    <header>
+        <nav id="navbar">
+            <i class="fa-solid fa-burger" id="navicon"> CALCULADORA GRP</i>
+
+            <ul id="nav_list">
+                <li class="nav_item">
+                    <a href="{{ url_for('dashboard') }}">Home</a>
+                </li>
+                <li class="nav_item">
+                    <a href="#">Como usar</a>
+                </li>
+                <li class="nav_item">
+                    <a href="#">Contato</a>
+                </li>
+                <li class="nav_item">
+                    <a href="#">Meu Perfil</a>
+                </li>
+
+            </ul>
+        </nav>
+
+    </header>
 
     <div class="container">
         <h1>PLANEJE RENDA FUTURA: INSS, Desejada&Possível</h1>
