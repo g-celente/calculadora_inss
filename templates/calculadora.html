@@ -8,69 +8,94 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <h1 style="margin: 0;">Simulação INSS</h1>
+        <div>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>Simulação de Benefício INSS</h1>
-
-        <!-- Exibir mensagens flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="messages">
-                    {% for category, message in messages %}
-                        <li class="{{ category }}">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-
-        <!-- Formulário de cálculo de benefício -->
+        <h1>PLANEJE RENDA FUTURA: INSS, Desejada&Possível</h1>
+        
+        <h6>Planeje&Calcule sua Renda Futura em 2 Etapas</h6>
+        
+        <p>Em duas etapas descubra sua Renda Futura resultado da soma do seu esforço de poupanca E do seu Benefício de Aposentadoria!</p>
+        
+        <h2>1 - CALCULE RENDA de APOSENTADORIA pelo INSS</h2>
+        
         <form action="{{ url_for('calcular_beneficio') }}" method="POST">
-            <div class="form-group">
-                <label for="sexo">Sexo:</label>
-                <select name="sexo" id="sexo" required>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
-                </select>
-            </div>
+            <label for="sexo">Sexo:</label>
+            <select name="sexo" id="sexo" required>
+                <option value="M">Masculino</option>
+                <option value="F">Feminino</option>
+            </select>
 
-            <div class="form-group">
-                <label for="salario_bruto">Salário Bruto:</label>
-                <input type="number" name="salario_bruto" id="salario_bruto" min="0" required>
-            </div>
+            <label for="salario_bruto">Salário Bruto Atual (R$):</label>
+            <input type="number" name="salario_bruto" id="salario_bruto" min="0" required>
 
             <button type="submit">Calcular Benefício INSS</button>
         </form>
 
-        <!-- Upload do CNIS -->
         <h2>Upload do CNIS (PDF)</h2>
         <form action="{{ url_for('upload_cnis') }}" method="POST" enctype="multipart/form-data">
             <input type="file" name="cnis_pdf" accept=".pdf">
             <button type="submit">Carregar CNIS</button>
         </form>
 
-        <!-- Gráficos Plotly -->
-        <div id="grafico_inss" style="width:100%;height:400px;"></div>
-
         <h2>Relatórios Disponíveis</h2>
         <a href="{{ url_for('download_pdf') }}" target="_blank">Baixar Relatório INSS (PDF)</a><br>
         <a href="{{ url_for('download_graph_pdf') }}" target="_blank">Baixar Gráfico (PDF)</a>
+
+        <h2>2 - CALCULE RENDA DESEJADA&POSSÍVEL FUTURA</h2>
+
+        <form id="income-simulation-form">
+            <label for="id_ini">Idade Atual:</label>
+            <input type="number" id="id_ini" min="15" max="100" value="25">
+
+            <label for="id_apos">Idade Aposentadoria:</label>
+            <input type="number" id="id_apos" min="15" max="120" value="65">
+
+            <label for="id_exp">Expectativa de Vida:</label>
+            <input type="number" id="id_exp" min="15" max="150" value="85">
+
+            <label for="id_reser">Reserva Financeira Atual (R$):</label>
+            <input type="number" id="id_reser" min="0" value="1000">
+
+            <label for="id_tx">Taxa real ano (%):</label>
+            <input type="number" id="id_tx" min="0.1" value="4">
+
+            <label for="id_inss">Benefício Esperado INSS (R$):</label>
+            <input type="number" id="id_inss" min="0" value="0">
+
+            <label for="id_dese">Renda Mensal DESEJADA (R$):</label>
+            <input type="number" id="id_dese" min="0" value="1000">
+
+            <label for="id_poss">Poupança Mensal POSSÍVEL (R$):</label>
+            <input type="number" id="id_poss" min="0" value="100">
+
+            <button type="button" id="submit-button">Condição p/ Renda Desejada</button>
+            <button type="button" id="submit-button2">Condição p/ Renda Possível</button>
+        </form>
+
+        <div id="grafico-inss" style="width:100%;height:400px;"></div>
+        
+        <script>
+            // Simulação de gráfico Plotly
+            var data = [{
+                x: ['Aposentadoria 1', 'Aposentadoria 2'],
+                y: [2000, 2500],
+                type: 'bar'
+            }];
+            var layout = {
+                title: 'Valor Benefício',
+                xaxis: { title: 'Alternativa' },
+                yaxis: { title: 'Valor' }
+            };
+            Plotly.newPlot('grafico-inss', data, layout);
+        </script>
     </div>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-    <script>
-        // Simulação de gráfico Plotly, semelhante ao Dash
-        var data = [{
-            x: ['Aposentadoria 1', 'Aposentadoria 2'],
-            y: [2000, 2500],
-            type: 'bar'
-        }];
-
-        var layout = {
-            title: 'Valor Benefício',
-            xaxis: { title: 'Alternativa' },
-            yaxis: { title: 'Valor' }
-        };
-
-        Plotly.newPlot('grafico_inss', data, layout);
-    </script>
 </body>
 </html>

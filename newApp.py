@@ -6,14 +6,20 @@ import datetime
 from functools import wraps
 import os
 import pandas as pd
+import matplotlib.pyplot as plt  # Para gráficos
+import io  # Para manipulação de PDFs e imagens na memória
 import base64
+import pdfplumber  # Para manipulação de PDFs
+import dash
+import dash_bootstrap_components as dbc
+from dash import dcc, html, Input, Output, State
 
 app = Flask(__name__)
 
 # Configuração do banco de dados SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # Banco de dados SQLite
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Para desativar warnings de modificações no SQLAlchemy
-app.config['SECRET_KEY'] = 'supersecretkey'  # Necessário para usar sessões e tokens JWT
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'supersecretkey'
 
 # Instância do SQLAlchemy
 db = SQLAlchemy(app)
@@ -26,141 +32,192 @@ class User(db.Model):
 
 # Criar o banco de dados e as tabelas
 with app.app_context():
-    db.create_all()  # Isso cria as tabelas no banco de dados SQLite
+    db.create_all()
 
-# Rota para registrar novos usuários
+# Função de autenticação (para proteger rotas)
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('auth-token')
+        if not token:
+            return redirect(url_for('login'))
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        except:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+
+    token = request.cookies.get('auth-token')
+
+    if token:
+        return render_template('calculadora.html')
+    
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         hashed_password = generate_password_hash(password, 'pbkdf2:sha256')
-
         new_user = User(email=email, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-
         flash('Registro realizado com sucesso!')
         return redirect(url_for('login'))
-
     return render_template('auth/registro.html')
 
-# Rota para login de usuários e retornar token JWT
-@app.route('/login', methods=['POST', 'GET'])
+# Rota para login
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Redireciona para o dashboard se o usuário já estiver logado
-    if 'auth-token' in request.cookies:
-        return redirect(url_for('dashboard'))
+    token = request.cookies.get('auth-token')
+
+    if token:
+        return render_template('calculadora.html')
 
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-
         user = User.query.filter_by(email=email).first()
-
         if user and check_password_hash(user.password, password):
             token = jwt.encode({
                 'user_id': user.id,
                 'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7)
             }, app.config['SECRET_KEY'], algorithm='HS256')
+            response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
+            response.set_cookie('auth-token', token, httponly=True)
+            return response, 200  # Retorna um JSON com status 200
 
-            # Define o cookie
-            response = jsonify({'message': 'Login bem-sucedido!'})
-            response.set_cookie('auth-token', token, httponly=True)  # Armazena o token no cookie
-
-            return response
-
-        return jsonify({'message': 'Email ou senha inválidos.'}), 401
+        return jsonify({'message': 'Credenciais inválidas.'}), 401
 
     return render_template('auth/login.html')
 
-pdf_path = r'F:\PYTHON T1\CNIS\RelatInss.pdf'
-graph_pdf_path = r'F:\PYTHON T1\CNIS\RND.pdf'
 
-# Rota para baixar o relatório PDF
+
+# Função para criar relatórios PDF
+def criar_relat_pdf(sx, slbr):
+    data = {
+        'Alternativa': ['Aposentadoria 1', 'Aposentadoria 2'],
+        'Valor Benefício': [slbr * 0.7, slbr * 0.8]  # Exemplo fictício
+    }
+    df = pd.DataFrame(data)
+    pdf_path = 'RelatInss.pdf'
+    df.to_csv(pdf_path, index=False)  # Simulação de criação de PDF (use fpdf ou reportlab para PDF real)
+    return df
+
+# Função para verificar o arquivo CNIS (PDF)
+def verifica_cnis():
+    pdf_path = r'F:\PYTHON T1\CNIS\CNIS.pdf'
+    with pdfplumber.open(pdf_path) as pdf:
+        first_page = pdf.pages[0]
+        text = first_page.extract_text()
+        if "CNIS" in text:
+            return True
+        else:
+            return False
+
+# Função para gerar gráficos (renda desejada e possível)
+def gerar_grafico(tipo, salario_bruto):
+    fig, ax = plt.subplots()
+    if tipo == 'desejada':
+        categorias = ['Aposentadoria 1', 'Aposentadoria 2']
+        valores = [salario_bruto * 0.7, salario_bruto * 0.8]
+    else:  # Renda possível
+        categorias = ['Renda Possível 1', 'Renda Possível 2']
+        valores = [salario_bruto * 0.5, salario_bruto * 0.6]
+
+    ax.bar(categorias, valores)
+    ax.set_xlabel('Opções')
+    ax.set_ylabel('Valor')
+    ax.set_title('Comparação de Benefícios')
+
+    # Salvar o gráfico como PDF
+    graph_pdf_path = 'grafico.pdf'
+    fig.savefig(graph_pdf_path)
+    return graph_pdf_path
+
+# Rota para upload do CNIS e verificação
+@app.route('/upload_cnis', methods=['POST'])
+def upload_cnis():
+    if 'cnis_pdf' not in request.files:
+        flash('Nenhum arquivo selecionado!', 'error')
+        return redirect(url_for('dashboard'))
+
+    file = request.files['cnis_pdf']
+    if not file.filename.lower().endswith('.pdf'):
+        flash('O arquivo deve ser um PDF!', 'error')
+        return redirect(url_for('dashboard'))
+
+    file_path = os.path.join('assets', 'cnis.pdf')
+    file.save(file_path)
+
+    # Verifica se o arquivo CNIS é válido
+    if verifica_cnis():
+        flash('Arquivo CNIS carregado com sucesso!', 'success')
+    else:
+        flash('Arquivo CNIS inválido!', 'error')
+
+    return redirect(url_for('dashboard'))
+
+# Rota para calcular benefício e gerar relatório
 @app.route('/calcular_beneficio', methods=['POST'])
+@token_required
 def calcular_beneficio():
     sexo = request.form.get('sexo')
     salario_bruto = request.form.get('salario_bruto')
 
     if not sexo or not salario_bruto:
         flash('Preencha todos os campos corretamente!', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
     try:
         salario_bruto = float(salario_bruto)
     except ValueError:
         flash('O salário bruto deve ser um número válido.', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
-    # Simular o cálculo do benefício INSS
+    # Simular o cálculo do benefício
     relatorio = criar_relat_pdf(sexo, salario_bruto)
+    
+    # Gerar gráfico com base nos cálculos
+    gerar_grafico('desejada', salario_bruto)
 
     flash('Cálculo do benefício realizado com sucesso!', 'success')
     return render_template('calculadora.html', relatorio=relatorio)
 
-# Rota para upload do arquivo CNIS
-@app.route('/upload_cnis', methods=['POST'])
-def upload_cnis():
-    if 'cnis_pdf' not in request.files:
-        flash('Nenhum arquivo selecionado!', 'error')
-        return redirect(url_for('index'))
-
-    file = request.files['cnis_pdf']
-    if not file.filename.lower().endswith('.pdf'):
-        flash('O arquivo deve ser um PDF!', 'error')
-        return redirect(url_for('index'))
-
-    file_path = os.path.join('assets', 'cnis.pdf')
-    file.save(file_path)
-
-    flash('Arquivo CNIS carregado com sucesso!', 'success')
-    return redirect(url_for('index'))
-
-# Rota para baixar o relatório PDF
+# Rota para download do relatório PDF
 @app.route('/download_pdf')
+@token_required
 def download_pdf():
+    pdf_path = 'RelatInss.pdf'
     if os.path.exists(pdf_path):
-        return send_file(pdf_path, as_attachment=False)
-    else:
-        flash('Arquivo PDF não encontrado.', 'error')
-        return redirect(url_for('index'))
+        return send_file(pdf_path, as_attachment=True)
+    flash('Arquivo PDF não encontrado.', 'error')
+    return redirect(url_for('dashboard'))
 
-# Rota para baixar o gráfico PDF
+# Rota para download do gráfico PDF
 @app.route('/download_graph_pdf')
+@token_required
 def download_graph_pdf():
+    graph_pdf_path = 'grafico.pdf'
     if os.path.exists(graph_pdf_path):
-        return send_file(graph_pdf_path, as_attachment=False)
-    else:
-        flash('Arquivo gráfico PDF não encontrado.', 'error')
-        return redirect(url_for('index'))
+        return send_file(graph_pdf_path, as_attachment=True)
+    flash('Arquivo gráfico PDF não encontrado.', 'error')
+    return redirect(url_for('dashboard'))
 
-def criar_relat_pdf(sexo, salario_bruto):
-    # Simular a criação de relatório em formato PDF ou tabela de resultado
-    data = {
-        'Alternativa': ['Aposentadoria 1', 'Aposentadoria 2'],
-        'Valor Benefício': [2000, 2500]
-    }
-    return pd.DataFrame(data)
-
-# Exemplo de rota de dashboard (que requer o token JWT)
-@app.route('/')  # Protege a rota com o decorator
+@app.route('/')
+@token_required
 def dashboard():
-    token = request.cookies.get('auth-token')
-    if not token:
-        return redirect(url_for('login'))
-    
-    if token:
-        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        user_id = data['user_id']
-        return render_template('calculadora.html')
-    return redirect(url_for('login'))  # Redireciona se não houver token
+    return render_template('calculadora.html')
 
-# Rota para o logout (opcional para remover sessão)
+# Rota para logout
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)
-    return redirect(url_for('login'))
+    response = redirect(url_for('login'))
+    response.set_cookie('auth-token', '', expires=0)
+    flash('Logout realizado com sucesso.')
+    return response
+
 
 if __name__ == '__main__':
     app.run(debug=True)

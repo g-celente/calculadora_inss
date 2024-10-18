@@ -59,22 +59,21 @@
         body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
       });
 
-      const data = await response.json();
-      
-      if (response.status === 200) {
+      if (response.ok) {
+        const data = await response.json();
         const token = data.token;
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 7);
-        
-        localStorage.setItem('auth-token', token);
-        localStorage.setItem('token-expiration', expirationDate);
-        window.location.href = '/';
-      }
-        else {
-        const errorMessage = document.getElementById('error-message');
-        errorMessage.textContent = data.message;
+
+        // Armazenar o token no cookie do navegador
+        document.cookie = `auth-token=${token};expires=${expirationDate.toUTCString()}; path=/`;
+        window.location.href = '/'; // Redireciona após login bem-sucedido
+      } else {
+        const errorMessage = await response.json();
+        const errorField = document.getElementById('error-message');
+        errorField.textContent = errorMessage.message;
       }
     });
-  </script>
+</script>
 </body>
 </html>
