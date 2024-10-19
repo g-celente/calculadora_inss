@@ -25,9 +25,9 @@
             placeholder="Insira seu nome"
             required
           />
-          {% if error_name %}
+          {% if error %}
           <span class="invalid-feedback" role="alert">
-            <strong>{{ error_name }}</strong>
+            <strong style="color: red;">{{ error }}</strong>
           </span>
           {% endif %}
         </div>
@@ -41,11 +41,6 @@
             placeholder="Insira seu email"
             required
           />
-          {% if error_email %}
-          <span class="invalid-feedback" role="alert">
-            <strong>{{ error_email }}</strong>
-          </span>
-          {% endif %}
         </div>
 
         <div class="campo-input">

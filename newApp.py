@@ -27,6 +27,7 @@ db = SQLAlchemy(app)
 # Modelo de usuário
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable= False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
 
@@ -39,6 +40,17 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.cookies.get('auth-token')
+
+        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        user_id = payload['user_id']
+
+        # Buscando o usuário no banco de dados
+        user = User.query.get(user_id)
+
+        if not user:
+            flash('Usuário não encontrado')
+            return redirect(url_for('login'))
+
         if not token:
             return redirect(url_for('login'))
         try:
@@ -57,10 +69,18 @@ def register():
         return render_template('calculadora.html')
     
     if request.method == 'POST':
+        name = request.form['name']
         email = request.form['email']
         password = request.form['password']
         hashed_password = generate_password_hash(password, 'pbkdf2:sha256')
-        new_user = User(email=email, password=hashed_password)
+
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            error = 'Usuário Já Registrado'
+            return render_template('auth/registro.html', error=error)
+
+        new_user = User(name=name, email=email, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         flash('Registro realizado com sucesso!')
@@ -225,16 +245,68 @@ def sobre():
 def contato():
     return render_template('contato.html')
 
-@app.route('/getUser', methods=['POST'])
+@app.route('/getUser', methods=['GET'])
 @token_required
 def getUser():
-    getUser = request.cookies.get('auth-token')
+    token = request.cookies.get('auth-token')
 
-    if not getUser:
-        flash('token não encontrado')
+    if not token:
+        flash('Token não encontrado.')
         return render_template('perfil.html')
-    
-    return 
+
+    try:
+        # Decodificando o token para obter o user_id
+        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        user_id = payload['user_id']
+
+        # Buscando o usuário no banco de dados
+        user = User.query.get(user_id)
+        if user is None:
+            flash('Usuário não encontrado.')
+            return render_template('perfil.html')
+
+        # Retornando os dados do usuário para o template
+        return render_template('perfil.html', user=user)
+
+    except jwt.ExpiredSignatureError:
+        flash('Token expirado.')
+        return render_template('perfil.html')
+    except jwt.InvalidTokenError:
+        flash('Token inválido.')
+        return render_template('perfil.html')
+
+@app.route('/alterarSenha', methods=['POST'])
+@token_required
+def alterarSenha():
+    token = request.cookies.get('auth-token')
+    new_password = request.form.get('new_password')
+
+    if not token or not new_password:
+        flash('Token ou nova senha não encontrados.')
+        return redirect(url_for('perfil'))
+
+    try:
+        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        user_id = payload['user_id']
+        user = User.query.get(user_id)
+
+        if user is None:
+            flash('Usuário não encontrado.')
+            return redirect(url_for('perfil'))
+
+        # Atualizar a senha
+        user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
+        db.session.commit()
+        flash('Senha alterada com sucesso!')
+        return redirect(url_for('perfil'))
+
+    except jwt.ExpiredSignatureError:
+        flash('Token expirado.')
+        return redirect(url_for('perfil'))
+    except jwt.InvalidTokenError:
+        flash('Token inválido.')
+        return redirect(url_for('perfil'))
+
 
 # Rota para logout
 @app.route('/logout')
