@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulação INSS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav id="navbar">
+            <i class="fa-solid fa-burger" id="navicon">
+                <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"> CALCULADORA GRP
+            </i>
+            <ul id="nav_list">
+                <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
+                <li class="nav_item"><a href="{{ url_for('dashboard') }}">Calculadora</a></li>
+                <li class="nav_item"><a href="{{ url_for('contato') }}">Contato</a></li>
+                <li class="nav_item"><a href="{{ url_for('perfil') }}">Meu Perfil</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="home">
+        
+            <div id="cta">
+                <h1 class="title">
+                    Planeje Renda Futura <br>
+                    <span>INSS E DESEJADA</span>
+                </h1>
+    
+                <p class="descricao">
+                    Em duas etapas descubra sua Renda Futura resultado da soma do seu esforço de poupanca E do seu Benefício de Aposentadoria! 
+                </p>
+                
+                <div id="cta_botao">
+                    <a href="{{ url_for('dashboard') }}" class="button">Renda de Aposentadoria</a>
+                </div>
+    
+            </div>
+            
+        </section>
+        <section id="menu">
+            <h2 class="section-title"> Como Conseguir o CNIS? </h2>
+            <h3 class="section-subtitle">Nossos Pratos Especiais</h3>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="footer-content">
+          <h2 class="footer-title">CALCULADORA GRP</h2>
+          <p class="footer-description">
+            Em duas etapas, descubra sua Renda Futura 
+            resultado da soma do seu esforço de poupança e do seu Benefício de Aposentadoria!
+          </p>
+          <div class="footer-social">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-google-plus"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+          </div>
+          <p class="footer-copyright">
+            Copyright ©2020 GRP. Design By <a href="https://github.com/g-celente">Guilherme</a>
+          </p>
+        </div>
+    </footer>
+</body>
+</html>

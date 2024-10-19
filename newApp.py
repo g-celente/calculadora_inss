@@ -205,10 +205,36 @@ def download_graph_pdf():
     flash('Arquivo gráfico PDF não encontrado.', 'error')
     return redirect(url_for('dashboard'))
 
-@app.route('/')
+@app.route('/calculadora')
 @token_required
 def dashboard():
     return render_template('calculadora.html')
+
+@app.route('/perfil')
+@token_required
+def perfil():
+    return render_template('perfil.html')
+
+@app.route('/')
+@token_required
+def sobre():
+    return render_template('sobre.html')
+
+@app.route('/contato')
+@token_required
+def contato():
+    return render_template('contato.html')
+
+@app.route('/getUser', methods=['POST'])
+@token_required
+def getUser():
+    getUser = request.cookies.get('auth-token')
+
+    if not getUser:
+        flash('token não encontrado')
+        return render_template('perfil.html')
+    
+    return 
 
 # Rota para logout
 @app.route('/logout')

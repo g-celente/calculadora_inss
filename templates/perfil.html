@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulação INSS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/perfil.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav id="navbar">
+            <i class="fa-solid fa-burger" id="navicon">
+                <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"> CALCULADORA GRP
+            </i>
+            <ul id="nav_list">
+                <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
+                <li class="nav_item"><a href="{{ url_for('dashboard') }}">Calculadora</a></li>
+                <li class="nav_item"><a href="{{ url_for('contato') }}">Contato</a></li>
+                <li class="nav_item"><a href="{{ url_for('perfil') }}">Meu Perfil</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="page-background">
+            <div class="container pt-5 flex flex-column justify-center">
+              <div class="user-img flex gap-1 align-center mb-5">
+                <img
+                  src="/static/assets/user_default_png.png"
+                  alt="Usuário sem imagem"
+                  width="200px"
+                />
+                <!-- Se houver uma imagem de usuário, este img abaixo seria usado -->
+                <!-- <img src="user_image_url" alt="Imagem do Usuário" style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%;" /> -->
+              </div>
+              <h2 class="mb-3">Nova Senha:</h2>
+              <div class="input-container mb-3">
+                <label>Senha Atual:</label>
+                <input class="input" type="password" />
+              </div>
+          
+              <div class="input-container">
+                <label>Nova Senha:</label>
+                <input class="input" type="password" />
+              </div>
+          
+              <div class="btns flex mt-4 gap-05">
+                <button class="base-button" disabled>Mudar Senha</button>
+              </div>
+            </div>
+    </main>
+    <footer class="footer">
+        <div class="footer-content">
+          <h2 class="footer-title">CALCULADORA GRP</h2>
+          <p class="footer-description">
+            Em duas etapas, descubra sua Renda Futura 
+            resultado da soma do seu esforço de poupança e do seu Benefício de Aposentadoria!
+          </p>
+          <div class="footer-social">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-google-plus"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+          </div>
+          <p class="footer-copyright">
+            Copyright ©2020 GRP. Design By <a href="https://github.com/g-celente">Guilherme</a>
+          </p>
+        </div>
+    </footer>
+</body>
+</html>
