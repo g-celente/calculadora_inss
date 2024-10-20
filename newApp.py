@@ -35,21 +35,12 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
+
 # Função de autenticação (para proteger rotas)
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.cookies.get('auth-token')
-
-        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        user_id = payload['user_id']
-
-        # Buscando o usuário no banco de dados
-        user = User.query.get(user_id)
-
-        if not user:
-            flash('Usuário não encontrado')
-            return redirect(url_for('login'))
+        token = request.cookies.get('auth-token')  # Por exemplo, obtendo o token do cabeçalho de autorização
 
         if not token:
             return redirect(url_for('login'))
@@ -72,7 +63,12 @@ def register():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
+        confirm_password = request.form['password_confirmation']
         hashed_password = generate_password_hash(password, 'pbkdf2:sha256')
+
+        if password != confirm_password:
+            error_password = 'As senhas não conhecidem'
+            return render_template('auth/registro.html', error_password=error_password)
 
         user = User.query.filter_by(email=email).first()
 
@@ -307,6 +303,32 @@ def alterarSenha():
         flash('Token inválido.')
         return redirect(url_for('perfil'))
 
+@app.route('/forgotPassword', methods=['POST', 'GET'])
+def forgotPassword():
+
+    if request.method == 'POST':
+        email = request.form['email']
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            error_email = 'Email não cadastrado no sistema'
+            return render_template('auth/resetPassword.html', error_email=error_email)
+        
+        newPassword = request.form['password']
+        confirm_password = request.form['password_confirmation']
+
+        if newPassword != confirm_password:
+            error_password = 'As senhas não coincidem'
+            return render_template('auth/resetPassword.html', error_password=error_password)
+
+        user.password = generate_password_hash(newPassword)
+        db.session.commit()
+        print('senha alterada com sucesso')
+        return render_template('auth/login.html')
+        
+    return render_template('auth/resetPassword.html')
+        
 
 # Rota para logout
 @app.route('/logout')

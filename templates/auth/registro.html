@@ -54,7 +54,7 @@
           />
           {% if error_password %}
           <span class="invalid-feedback" role="alert">
-            <strong>{{ error_password }}</strong>
+            <strong style="color: red;">{{ error_password }}</strong>
           </span>
           {% endif %}
         </div>
@@ -68,11 +68,9 @@
             placeholder="Confirme sua senha"
             required
           />
-          {% if error_password_confirmation %}
-          <span class="invalid-feedback" role="alert">
-            <strong>{{ error_password_confirmation }}</strong>
-          </span>
-          {% endif %}
+          <div class="campo-input">
+            <span id="password-error" class="invalid-feedback" role="alert" style="color: red;"></span>
+          </div>
         </div>
 
         <button type="submit">
@@ -88,3 +86,19 @@
   </div>
 </body>
 </html>
+<script>
+    const senha = document.getElementById('password');
+    const confirmSenha = document.getElementById('password_confirmation');
+    const errorSpan = document.getElementById('password-error');
+
+    function confirmSenha(event) {
+        if (senha.value !== confirmSenha.value) {
+            errorSpan.textContent = 'As senhas não coincidem'; // Exibe a mensagem de erro
+            event.preventDefault(); // Impede o envio do formulário
+        } else {
+            errorSpan.textContent = ''; // Limpa a mensagem de erro se as senhas coincidirem
+        }
+        form.submit()
+    }
+    
+</script>
