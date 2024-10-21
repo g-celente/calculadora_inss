@@ -9,10 +9,12 @@ import pandas as pd
 import matplotlib.pyplot as plt  # Para gráficos
 import io  # Para manipulação de PDFs e imagens na memória
 import base64
-import pdfplumber  # Para manipulação de PDFs
-import dash
-import dash_bootstrap_components as dbc
-from dash import dcc, html, Input, Output, State
+import pdfplumber 
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas # Para manipulação de PDFs
+import pandas as pd
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 
@@ -34,6 +36,27 @@ class User(db.Model):
 # Criar o banco de dados e as tabelas
 with app.app_context():
     db.create_all()
+
+# Função para verificar o arquivo CNIS (PDF)
+def verifica_cnis(file_path):
+    with pdfplumber.open(file_path) as pdf:
+        first_page = pdf.pages[0]
+        text = first_page.extract_text()
+        if "CNIS" in text:
+            return True
+        else:
+            return False
+
+# Função para criar relatórios PDF
+def criar_relat_pdf(sx, slbr):
+    data = {
+        'Alternativa': ['Aposentadoria 1', 'Aposentadoria 2'],
+        'Valor Benefício': [slbr * 0.7, slbr * 0.8]  # Exemplo fictício
+    }
+    df = pd.DataFrame(data)
+    pdf_path = 'RelatInss.pdf'
+    df.to_csv(pdf_path, index=False)  # Simulação de criação de PDF (use fpdf ou reportlab para PDF real)
+    return df
 
 
 # Função de autenticação (para proteger rotas)
@@ -109,28 +132,70 @@ def login():
     return render_template('auth/login.html')
 
 
+@app.route('/gerar_relat_pdf', methods=['POST'])
+def criar_relat_pdf():
+    salario_bruto = request.form.get('salario_bruto')
+    try:
+        salario_bruto = float(salario_bruto)
+    except ValueError:
+        flash('O salário bruto deve ser um número válido.', 'error')
+        return redirect(url_for('dashboard'))
 
+    # Cálculos simplificados para as alternativas de aposentadoria
+    beneficio1 = salario_bruto * 0.70
+    beneficio2 = salario_bruto * 0.80
+
+    # Criar o gráfico de barras
+    fig, ax = plt.subplots()
+    ax.bar(['Aposentadoria 1 (70%)', 'Aposentadoria 2 (80%)'], [beneficio1, beneficio2])
+    ax.set_ylabel('Valor do Benefício (R$)')
+    ax.set_title('Simulação de Benefícios de Aposentadoria')
+
+    # Salvar o gráfico como uma imagem em memória
+    img_buf = io.BytesIO()
+    plt.savefig(img_buf, format='png')
+    img_buf.seek(0)
+
+    # Criar o arquivo PDF
+    pdf_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'relatorio_inss.pdf')
+    c = canvas.Canvas(pdf_path, pagesize=letter)
+    c.drawString(100, 750, "Relatório de Benefício INSS")
+    c.drawString(100, 730, f"Salário Bruto: R$ {salario_bruto:.2f}")
+    c.drawString(100, 710, f"Alternativa 1 (70%): R$ {beneficio1:.2f}")
+    c.drawString(100, 690, f"Alternativa 2 (80%): R$ {beneficio2:.2f}")
+
+    c.showPage()
+    c.save()
+
+    return send_file(pdf_path, as_attachment=True)
 # Função para criar relatórios PDF
-def criar_relat_pdf(sx, slbr):
-    data = {
-        'Alternativa': ['Aposentadoria 1', 'Aposentadoria 2'],
-        'Valor Benefício': [slbr * 0.7, slbr * 0.8]  # Exemplo fictício
-    }
-    df = pd.DataFrame(data)
-    pdf_path = 'RelatInss.pdf'
-    df.to_csv(pdf_path, index=False)  # Simulação de criação de PDF (use fpdf ou reportlab para PDF real)
-    return df
+# Função para gerar gráficos (renda desejada e possível)
+@app.route('/gerar_grafico_pdf', methods=['POST'])
+def gerar_grafico_pdf():
+    salario_bruto = request.form.get('salario_bruto')
+    try:
+        salario_bruto = float(salario_bruto)
+    except ValueError:
+        flash('O salário bruto deve ser um número válido.', 'error')
+        return redirect(url_for('dashboard'))
 
-# Função para verificar o arquivo CNIS (PDF)
-def verifica_cnis():
-    pdf_path = r'F:\PYTHON T1\CNIS\CNIS.pdf'
-    with pdfplumber.open(pdf_path) as pdf:
-        first_page = pdf.pages[0]
-        text = first_page.extract_text()
-        if "CNIS" in text:
-            return True
-        else:
-            return False
+    # Simulação de cálculos de aposentadoria para gráfico
+    beneficios = [salario_bruto * 0.70, salario_bruto * 0.80]
+    alternativas = ['Aposentadoria 1', 'Aposentadoria 2']
+
+    # Gera o gráfico usando matplotlib
+    fig, ax = plt.subplots()
+    ax.bar(alternativas, beneficios, color=['blue', 'green'])
+    ax.set_ylabel('Valor do Benefício (R$)')
+    ax.set_title('Comparação das Opções de Aposentadoria')
+
+    # Salva o gráfico como um arquivo PDF
+    graph_pdf_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'grafico_beneficio.pdf')
+    fig.savefig(graph_pdf_path)
+
+    # Enviar o PDF do gráfico para download
+    return send_file(graph_pdf_path, as_attachment=True)
+
 
 # Função para gerar gráficos (renda desejada e possível)
 def gerar_grafico(tipo, salario_bruto):
@@ -156,32 +221,36 @@ def gerar_grafico(tipo, salario_bruto):
 @app.route('/upload_cnis', methods=['POST'])
 def upload_cnis():
     if 'cnis_pdf' not in request.files:
-        flash('Nenhum arquivo selecionado!', 'error')
+        flash('Nenhum arquivo foi enviado.', 'error')
         return redirect(url_for('dashboard'))
 
     file = request.files['cnis_pdf']
-    if not file.filename.lower().endswith('.pdf'):
-        flash('O arquivo deve ser um PDF!', 'error')
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'error')
         return redirect(url_for('dashboard'))
 
-    file_path = os.path.join('assets', 'cnis.pdf')
-    file.save(file_path)
+    if file and file.filename.endswith('.pdf'):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join('uploads', filename)
+        file.save(file_path)
 
-    # Verifica se o arquivo CNIS é válido
-    if verifica_cnis():
-        flash('Arquivo CNIS carregado com sucesso!', 'success')
+        if verifica_cnis(file_path):
+            flash('CNIS verificado com sucesso!', 'success')
+        else:
+            flash('O arquivo não contém um CNIS válido.', 'error')
+
+        return redirect(url_for('dashboard'))
     else:
-        flash('Arquivo CNIS inválido!', 'error')
-
-    return redirect(url_for('dashboard'))
+        flash('Por favor, faça o upload de um arquivo PDF válido.', 'error')
+        return redirect(url_for('dashboard'))
 
 # Rota para calcular benefício e gerar relatório
 @app.route('/calcular_beneficio', methods=['POST'])
-@token_required
 def calcular_beneficio():
     sexo = request.form.get('sexo')
     salario_bruto = request.form.get('salario_bruto')
 
+    # Validação dos dados
     if not sexo or not salario_bruto:
         flash('Preencha todos os campos corretamente!', 'error')
         return redirect(url_for('dashboard'))
@@ -192,14 +261,16 @@ def calcular_beneficio():
         flash('O salário bruto deve ser um número válido.', 'error')
         return redirect(url_for('dashboard'))
 
-    # Simular o cálculo do benefício
-    relatorio = criar_relat_pdf(sexo, salario_bruto)
-    
-    # Gerar gráfico com base nos cálculos
-    gerar_grafico('desejada', salario_bruto)
+    # Simulação de cálculo de benefício com regras simplificadas
+    if salario_bruto <= 1212.00:
+        beneficio = salario_bruto * 0.75  # Exemplo de faixa mais baixa
+    elif salario_bruto <= 2427.35:
+        beneficio = salario_bruto * 0.80  # Faixa intermediária
+    else:
+        beneficio = salario_bruto * 0.85  # Faixa mais alta
 
-    flash('Cálculo do benefício realizado com sucesso!', 'success')
-    return render_template('calculadora.html', relatorio=relatorio)
+    # Passa para o template o valor do benefício
+    return render_template('resultado.html', beneficio=beneficio)
 
 # Rota para download do relatório PDF
 @app.route('/download_pdf')
@@ -211,6 +282,7 @@ def download_pdf():
     flash('Arquivo PDF não encontrado.', 'error')
     return redirect(url_for('dashboard'))
 
+# Rota para download do gráfico PDF
 # Rota para download do gráfico PDF
 @app.route('/download_graph_pdf')
 @token_required
