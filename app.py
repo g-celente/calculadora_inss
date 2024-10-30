@@ -400,7 +400,48 @@ def forgotPassword():
         return render_template('auth/login.html')
         
     return render_template('auth/resetPassword.html')
+
+@token_required
+@app.route('/remakePassword', methods=['POST'])
+def mudarSenha():
+    token = request.form.get('token')  # Obtenha o token do formulário
+    nova_senha = request.form.get('new_password')
+    confirmar_senha = request.form.get('confirm_password')
+
+    if nova_senha != confirmar_senha:
+        senha_error = 'As senhas não coincidem.'
+        return render_template('perfil.html', senha_error=senha_error)
+
+    try:
+        # Decodificando o token JWT
+        decoded_data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        user_id = decoded_data.get('user_id')
+
+        # Obtendo o usuário pelo ID
+        user = User.query.get(user_id)  # Usando SQLAlchemy para obter o usuário
+
+        if user is None:
+            flash('Usuário não encontrado.', 'error')
+            return redirect('/getUser')
+
+        # Atualizando a senha do usuário
+        user.password = generate_password_hash(nova_senha)
+        db.session.commit() 
         
+        senha_mensagem = 'Senha Alterada com Sucesso!' # Salva as alterações no banco de dados
+        return render_template('perfil.html', senha_mensagem=senha_mensagem)
+
+    except jwt.ExpiredSignatureError:
+        flash('O token de autenticação expirou.', 'error')
+        return redirect('/getUser')
+
+    except jwt.DecodeError:
+        flash('Token inválido.', 'error')
+        return redirect('/getUser')
+
+    except Exception as e:
+        flash(f'Ocorreu um erro: {str(e)}', 'error')
+        return redirect('/getUser')      
 
 # Rota para logout
 @app.route('/logout')

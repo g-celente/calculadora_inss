@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulação INSS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/perfil.css') }}">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
@@ -48,20 +47,33 @@
                     <p>Usuário não encontrado.</p>
                 {% endif %}
                 
-                <h2 class="mb-3">Nova Senha:</h2>
-                <div class="input-container mb-3">
-                    <label>Senha Atual:</label>
-                    <input class="input" type="password" />
-                </div>
-          
-                <div class="input-container">
-                    <label>Confirmar Senha:</label>
-                    <input class="input" type="password" />
-                </div>
-          
-                <div class="btns flex mt-4 gap-05">
-                    <button class="base-button" disabled>Mudar Senha</button>
-                </div>
+                <form method="POST" action="{{ url_for('mudarSenha') }}">
+                    <h2 class="mb-3">Alterar Senha</h2>
+                    {% if senha_mensagem %}
+                        <span class="invalid-feedback" role="alert">
+                            <strong style="color: green;">{{ senha_mensagem }}</strong>
+                        </span>
+                    {% endif %}
+                   
+                    <div class="input-container mb-3">
+                        <label>Nova Senha:</label>
+                        <input class="input" type="password" name="new_password" required id="new_password" />
+                    </div>
+                
+                    <div class="input-container mb-3">
+                        <label>Confirmar Senha:</label>
+                        <input class="input" type="password" name="confirm_password" id="confirm_password" />
+                    </div>
+                    {% if senha_error %}
+                        <span class="invalid-feedback" role="alert">
+                            <strong style="color: red;">{{ senha_error }}</strong>
+                        </span>
+                    {% endif %}
+                  
+                    <div class="btns flex mt-4 gap-05">
+                        <button class="base-button" type="submit">Alterar Senha</button>
+                    </div>
+                </form>
             </div>
         </div>
     </main>
