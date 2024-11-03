@@ -26,7 +26,6 @@ import locale
 
 app = Flask(__name__)
 
-@app.before_first_request
 def setup_locale():
     try:
         locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
@@ -2950,6 +2949,7 @@ def criar_grafico_rendaPossivel():
 @token_required
 def gerar_relatorio():
     try:
+        setup_locale()
         cnis_file = request.files['cnis_file']
         # Construa o caminho absoluto para o arquivo CNIS.pdf
         cnis_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos',  secure_filename(cnis_file.filename))
@@ -2986,4 +2986,5 @@ def gerar_relatorio():
 
 
 if __name__ == '__main__':
+    setup_locale()
     app.run(debug=True)
