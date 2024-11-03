@@ -249,3 +249,7 @@ button:hover {
   .footer-copyright a:hover {
     text-decoration: underline;
   }
+
+.titulo {
+    justify-content: center;
+}
