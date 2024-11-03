@@ -2940,37 +2940,41 @@ def criar_grafico_rendaPossivel():
 @app.route('/gerar_relatorio', methods=['POST'])
 @token_required
 def gerar_relatorio():
-    cnis_directory = '/workspace/static/assets/arquivos/'
-    cnis_file = request.files['cnis_file']
-    # Construa o caminho absoluto para o arquivo CNIS.pdf
-    cnis_path = os.path.join(cnis_directory, 'static', 'assets', 'arquivos',  secure_filename(cnis_file.filename))
-    cnis_file.save(cnis_path)
-    n_clicks3 = 0
+    try:
+        cnis_file = request.files['cnis_file']
+        # Construa o caminho absoluto para o arquivo CNIS.pdf
+        cnis_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos',  secure_filename(cnis_file.filename))
+        cnis_file.save(cnis_path)
+        n_clicks3 = 0
 
-    sx = int(request.form['sexo'])
-    slbr = int(request.form['salario_bruto'])
+        sx = int(request.form['sexo'])
+        slbr = int(request.form['salario_bruto'])
 
-    if n_clicks3 >= 0:
-        # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
-        if not os.path.exists(cnis_path):
-            return '', 'Para o Calculo do Benefício Selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo !'
-        
-        if verifica_cnis(cnis_path) != 3:
-            return '', 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
-        
-        if sx is None:
-            return None, 'Preencher sexo e clique novamente em "Calcular Beneficio INSS" e aguarde...!'
-        
-        if slbr is None or slbr < 0:
-            return None, 'Preencha Salário Bruto com um valor inteiro, maior ou igual a zero e sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...). Clique novamente em "Calculo Beneficio INSS" e aguarde...!'
-        
-        ATNTV = criar_relat_pdf(sx, slbr, cnis_path)
-        df = pd.DataFrame(ATNTV)
-        pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'RelatInss.pdf')
+        if n_clicks3 >= 0:
+            # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
+            if not os.path.exists(cnis_path):
+                return '', 'Para o Calculo do Benefício Selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo !'
+            
+            if verifica_cnis(cnis_path) != 3:
+                return '', 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
+            
+            if sx is None:
+                return None, 'Preencher sexo e clique novamente em "Calcular Beneficio INSS" e aguarde...!'
+            
+            if slbr is None or slbr < 0:
+                return None, 'Preencha Salário Bruto com um valor inteiro, maior ou igual a zero e sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...). Clique novamente em "Calculo Beneficio INSS" e aguarde...!'
+            
+            ATNTV = criar_relat_pdf(sx, slbr, cnis_path)
+            df = pd.DataFrame(ATNTV)
+            pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'RelatInss.pdf')
 
-        response = send_file(pdf_path, as_attachment=True, download_name='RelatInss.pdf')
-        os.remove(cnis_path)
-        return response
+            response = send_file(pdf_path, as_attachment=True, download_name='RelatInss.pdf')
+            os.remove(cnis_path)
+            return response
+    except Exception as e:
+        app.logger.error(f"Error occurred: {str(e)}")
+        return "An error occurred", 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
