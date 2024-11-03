@@ -19,10 +19,19 @@ import base64
 import os
 from io import BytesIO
 import pandas as pd
+import locale
+
 
 
 
 app = Flask(__name__)
+
+@app.before_first_request
+def setup_locale():
+    try:
+        locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+    except locale.Error:
+        print("Locale not supported")
 
 # Configuração do banco de dados SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -2973,7 +2982,7 @@ def gerar_relatorio():
             return response
     except Exception as e:
         app.logger.error(f"Error occurred: {str(e)}")
-        return "An error occurred", 500
+        return f"An error occurred {str(e)}", 500
 
 
 if __name__ == '__main__':
