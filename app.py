@@ -2940,9 +2940,10 @@ def criar_grafico_rendaPossivel():
 @app.route('/gerar_relatorio', methods=['POST'])
 @token_required
 def gerar_relatorio():
+    cnis_directory = '/workspace/static/assets/arquivos/'
     cnis_file = request.files['cnis_file']
     # Construa o caminho absoluto para o arquivo CNIS.pdf
-    cnis_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos',  secure_filename(cnis_file.filename))
+    cnis_path = os.path.join(cnis_directory, 'static', 'assets', 'arquivos',  secure_filename(cnis_file.filename))
     cnis_file.save(cnis_path)
     n_clicks3 = 0
 
