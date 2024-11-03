@@ -4,24 +4,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 from functools import wraps
-import os
-import pandas as pd
 import matplotlib.pyplot as plt  # Para gráficos
 import io  # Para manipulação de PDFs e imagens na memória
 import base64
 import pdfplumber 
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas # Para manipulação de PDFs
-import pandas as pd
+from reportlab.pdfgen import canvas # Para manipulação de PDF
 from werkzeug.utils import secure_filename
 import numpy as np
-import pandas as pd
 from scipy.optimize import fminbound
 import matplotlib.pyplot as plt
 from datetime import datetime
 import base64
 import os
 from io import BytesIO
+import pandas as pd
+
 
 
 app = Flask(__name__)
@@ -63,7 +61,6 @@ def token_required(f):
 def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     import os
-    import pandas as pd
     # Caminho para o arquivo Excel
     path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'series.xlsx')
 
@@ -201,7 +198,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
                 if len(corresponde)> 1:#filtra data com padrao isolada em alguma linha
                     D_V.extend(corresponde)#receve os pares D&V de cada linha apos filtros
 
-    import pandas as pd
 
     # Divida os elementos de D_V em datas (comp) e valores (remu)
     comp = D_V[::2]
@@ -383,7 +379,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     #CALCULA IDADE PARA REGRA DE IDADE
     #REGRA IDADE: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
 
-    import pandas as pd
     from datetime import datetime, timedelta
 
     #XXXXXXXXXXXXXXXXXXX
@@ -637,7 +632,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CALCULA IDADE PARA REGRA DE PONTOS
     #REGRA PONTOS: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
-    import pandas as pd
     from datetime import datetime, timedelta
     #XXXXXXXXXXXXXXXXXXX
     pts = extpr.copy() #cria df p aposentadoria por pontos (apargar linhas acima de xxxxxx)
@@ -913,7 +907,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA IDADE PROGRESSIVA: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
-    import pandas as pd
     from datetime import datetime, timedelta
 
     prgv = extpr.copy() #cria df p aposentadoria progressiva (apargar linhas acima de xxxxxx)
@@ -1188,7 +1181,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA PEDAGIO 100: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
-    import pandas as pd
     from datetime import datetime, timedelta
 
     pdg100 = extpr.copy()
@@ -1429,7 +1421,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA PEDAGIO 50: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
-    import pandas as pd
     from datetime import datetime, timedelta
 
     pdg50 = extpr.copy()
@@ -1526,7 +1517,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA PEDAGIO 100p50: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
-    import pandas as pd
     from datetime import datetime, timedelta
 
     pdg1p5 = extpr.copy()
@@ -1770,7 +1760,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CRIA dataframe que encontra vinculos empregaticios e data ingresso inss
 
-    import pandas as pd
     import re
     import pdfplumber
 
@@ -1816,7 +1805,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CRIACAO do PDF com vinculos empregaticios
 
-    import pandas as pd
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib import colors
@@ -1915,7 +1903,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     create_pdf(VCLS, pdf_path)
 
     #CRIACAO do pdf com dados do filiado
-    import pandas as pd
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib import colors
@@ -2187,7 +2174,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     import pdfplumber
     import re
-    import pandas as pd
 
     pdf_path = cnis_path
     padraoS = r'([A-Z]{3,}[A-Z0-9\-]*)\s'
@@ -2223,7 +2209,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     #importa todas as tabelas d pdf SEM quebras \n E +d 1 tabela por pagina E salva dataframe sgls
 
     import pdfplumber
-    import pandas as pd
 
     pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'mysiglas.pdf')
 
@@ -2274,7 +2259,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CRIACAO do df mylgdi usando coluna Elemente do df df_SGS e coluna Indicador do df mysgls
 
-    import pandas as pd
 
     # Suponha que você já tenha seus dataframes df_SGS e mysgls carregados
 
@@ -2300,7 +2284,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CRIACAO do pdf indicadores, resultado da busca e insercao de informacao s indicadores
 
-    import pandas as pd
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib import colors
