@@ -2517,10 +2517,10 @@ def login():
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
+
         if user and check_password_hash(user.password, password):
             token = jwt.encode({
                 'user_id': user.id,
-                'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7)
             }, app.config['SECRET_KEY'], algorithm='HS256')
             response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
             response.set_cookie('auth-token', token, httponly=True)
