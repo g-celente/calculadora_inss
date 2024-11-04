@@ -2394,7 +2394,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.pdfgen import canvas
     from reportlab.lib.colors import gray, black,white, orangered  # Cor para a linha
     import io
-    
+
     def merge_pdfs(filepaths):
         pdf_writer = PyPDF2.PdfWriter()
         for filepath in filepaths:
@@ -2882,6 +2882,7 @@ def criar_grafico_rendaPossivel():
 @token_required
 def gerar_relatorio():
     try:
+        setup_locale()
         cnis_file = request.files['cnis_file']
         # Construa o caminho absoluto para o arquivo CNIS.pdf
         cnis_buffer = BytesIO()
