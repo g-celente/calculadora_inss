@@ -1821,7 +1821,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.platypus.flowables import Flowable
 
     # Caminho do arquivo PDF
-    pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'vinculos.pdf')
+    vinculos_pdf = BytesIO()
 
     # DataFrame 'VCLS' já existe em memória (certifique-se de que está preenchido)
     # VCLS = ...
@@ -1908,7 +1908,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         doc.build(content)
 
     # Chamar a função para criar o PDF usando o DataFrame existente 'VCLS'
-    create_pdf(VCLS, pdf_path)
+    create_pdf(VCLS, vinculos_pdf)
 
     #CRIACAO do pdf com dados do filiado
     from reportlab.lib.pagesizes import letter
@@ -1919,7 +1919,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.platypus.flowables import Flowable
 
     # Caminho do arquivo PDF
-    pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'filiado.pdf')
+    filiado_pdf = BytesIO()
 
     # Adicionando um atributo 'name' ao DataFrame 'ATNTV'
     ATNTV.name = 'ATNTV'
@@ -2176,7 +2176,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         doc.build(content)
 
     # Chamar a função para criar o PDF usando o DataFrame existente 'VCLS'
-    create_pdf(ATNTV, pdf_path)
+    create_pdf(ATNTV, filiado_pdf)
 
     #ENCONTRA lEGENDA DE INDICADORES no df df_SGS
 
@@ -2300,8 +2300,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.platypus.flowables import Flowable
 
     # Caminho do arquivo PDF
-    pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'indicadores.pdf')
-
+    indicadores_pdf = BytesIO()
     #Adicionando um atributo 'name' ao DataFrame 'mylgdi'
     mylgdi.name = 'mylgdi'
 
@@ -2384,7 +2383,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         doc.build(content)
 
     # Chamar a função para criar o PDF usando o DataFrame existente 'mylgdi'
-    create_pdf(mylgdi, pdf_path, mylgdi.name)
+    create_pdf(mylgdi, indicadores_pdf, mylgdi.name)
 
     #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -2395,84 +2394,31 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.pdfgen import canvas
     from reportlab.lib.colors import gray, black,white, orangered  # Cor para a linha
     import io
-
-    def add_page_numbers_and_header(pdf_path):
-        packet = io.BytesIO()
-        can = canvas.Canvas(packet, pagesize=letter)
-        existing_pdf = PyPDF2.PdfReader(pdf_path)
-        number_of_pages = len(existing_pdf.pages)
-        page_width, page_height = letter#[0]  # Largura da página no formato letter
-        header_height = 50  # Altura do cabeçalho
-        line_position_x = 50  # Posição x da linha vertical
-        footer_height = 20   # Altura do texto no rodapé
-
-        font_name = "Helvetica-Bold"
-        header_text = "GrP - Análise Previdência"
-        header_font_size = 24
-        vertical_text = "Relatorio Analitico Previdenciario - GrP"
-        vertical_font_size = 14  # Tamanho da fonte para o texto vertical
-
-        for page_number in range(number_of_pages):
-            if page_number == 0:
-                can.setFillColor(orangered)
-                can.rect(0, 735, page_width, header_height, stroke=0, fill=1)
-                can.setFont(font_name, header_font_size)
-                can.setFillColor(white)
-                header_text_width = can.stringWidth(header_text, font_name, header_font_size)
-                can.drawString((page_width - header_text_width) / 2, 750, header_text)
-            else:
-                # Linha vertical e texto
-                can.setLineWidth(5)  # Espessura da linha
-                can.setStrokeColor(orangered)  # Cor da linha
-                can.line(line_position_x, letter[1] - footer_height, line_position_x, footer_height + 10)
-                can.saveState()
-                can.translate(line_position_x - 10, letter[1] / 2)  # Deslocamento para centralizar o texto
-                can.rotate(90)
-                can.setFont(font_name, vertical_font_size)
-                can.setFillColor(black)
-                can.drawCentredString(0, 0, vertical_text)  # Centraliza o texto no ponto de rotação
-                can.restoreState()
-
-                # Desenha a imagem como marca d'água no canto superior direito
-                image_width = 30  # Largura da imagem, ajuste conforme necessário
-                image_height = 50  # Altura da imagem, ajuste conforme necessário
-                image_x = page_width - image_width - 10  # Posiciona a imagem a 10 pixels da borda direita
-                image_y = page_height - image_height - 10  # Posiciona a imagem a 10 pixels da borda superior
-                can.drawImage(image_path, image_x, image_y, width=image_width, height=image_height, mask='auto')
-
-            # Números de página no rodapé
-            can.setFont("Helvetica", 10)
-            can.setFillColor(black)
-            page_text = f"Página {page_number + 1} de {number_of_pages}"
-            page_text_width = can.stringWidth(page_text, "Helvetica", 10)
-            can.drawString(page_width - page_text_width - 40, 20, page_text)
-            can.drawString((page_width - can.stringWidth("GrP", "Helvetica", 12)) / 2, 20, "GrP")
-            can.drawString(40, 20, "guiarendaprevidencia.com.br")
-
-            can.showPage()
-        can.save()
-
-        packet.seek(0)
-        new_pdf = PyPDF2.PdfReader(packet)
-        output = PyPDF2.PdfWriter()
-        for page_number in range(number_of_pages):
-            page = existing_pdf.pages[page_number]
-            page.merge_page(new_pdf.pages[page_number])
-            output.add_page(page)
-
-        with open(pdf_path, "wb") as outputStream:
-            output.write(outputStream)
-
-    def merge_pdfs(filepaths, output_filepath):
+    
+    def merge_pdfs(filepaths):
         pdf_writer = PyPDF2.PdfWriter()
         for filepath in filepaths:
-            pdf_reader = PyPDF2.PdfReader(filepath)
+            # Aqui, se o arquivo é um BytesIO, voltamos para o início para garantir a leitura
+            if isinstance(filepath, BytesIO):
+                filepath.seek(0)
+                pdf_reader = PyPDF2.PdfReader(filepath)
+            else:
+                pdf_reader = PyPDF2.PdfReader(filepath)
+                
+            # Adiciona todas as páginas ao writer
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
                 pdf_writer.add_page(page)
-        with open(output_filepath, 'wb') as output_file:
-            pdf_writer.write(output_file)
-        add_page_numbers_and_header(output_filepath)
+        
+        # Armazena o PDF no buffer em vez de no disco
+        output_buffer = BytesIO()
+        pdf_writer.write(output_buffer)
+        output_buffer.seek(0)  # Certifique-se de que estamos no início para leitura posterior
+
+        # Opcional: adicionar numeração e cabeçalho usando `add_page_numbers_and_header`
+        # add_page_numbers_and_header(output_buffer)  # Se necessário, essa função deve ser adaptada para o BytesIO
+
+        return output_buffer
 
     def criar_nome_pdf(nome):
         nome_arquivo = '_'.join(nome.split()[:2])
@@ -2480,25 +2426,12 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         nome_pdf = f"{nome_arquivo}_{data_hora_atual}.pdf"
         return nome_pdf
 
-    # Caminho do diretório raiz
-    diretorio_raiz = os.path.join(app.root_path, 'static', 'assets', 'arquivos')
-    #nome = 'DIOGENES JOSE DE PAIVA JUNIOR'
-    filiado_pdf = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'filiado.pdf')
-    vinculos_pdf = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'vinculos.pdf')
-    indicaroes_pdf = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'indicadores.pdf')
-    nome='RelatInss'
-    pdf_files = [filiado_pdf, vinculos_pdf, indicaroes_pdf]
-    image_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'logo_GrP.png')  # Caminho para a imagem
-    #output_file = os.path.join(diretorio_raiz, criar_nome_pdf(nome))
-    output_file = os.path.join(diretorio_raiz, f"{nome}.pdf")
 
-    merge_pdfs(pdf_files, output_file)
+    pdf_files = [filiado_pdf, vinculos_pdf, indicadores_pdf]
+    pdf = merge_pdfs(pdf_files)
 
-    for arquivo in pdf_files:
-        if os.path.exists(arquivo):  # Verifica se o arquivo existe antes de tentar removê-lo
-            os.remove(arquivo)
-
-    return ATNTV
+    # No retorno de `gerar_relatorio`, você agora pode retornar diretamente `pdf`:
+    return pdf
 
 
 def verifica_cnis(cnis_path):
@@ -2949,11 +2882,11 @@ def criar_grafico_rendaPossivel():
 @token_required
 def gerar_relatorio():
     try:
-        setup_locale()
         cnis_file = request.files['cnis_file']
         # Construa o caminho absoluto para o arquivo CNIS.pdf
-        cnis_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos',  secure_filename(cnis_file.filename))
-        cnis_file.save(cnis_path)
+        cnis_buffer = BytesIO()
+        cnis_file.save(cnis_buffer)
+        cnis_buffer.seek(0)
         n_clicks3 = 0
 
         sx = int(request.form['sexo'])
@@ -2961,10 +2894,10 @@ def gerar_relatorio():
 
         if n_clicks3 >= 0:
             # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
-            if not os.path.exists(cnis_path):
+            if cnis_buffer.getbuffer().nbytes == 0:
                 return '', 'Para o Calculo do Benefício Selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo !'
             
-            if verifica_cnis(cnis_path) != 3:
+            if verifica_cnis(cnis_buffer) != 3:
                 return '', 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
             
             if sx is None:
@@ -2973,12 +2906,9 @@ def gerar_relatorio():
             if slbr is None or slbr < 0:
                 return None, 'Preencha Salário Bruto com um valor inteiro, maior ou igual a zero e sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...). Clique novamente em "Calculo Beneficio INSS" e aguarde...!'
             
-            ATNTV = criar_relat_pdf(sx, slbr, cnis_path)
-            df = pd.DataFrame(ATNTV)
-            pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'RelatInss.pdf')
+            pdf = criar_relat_pdf(sx, slbr, cnis_buffer)
 
-            response = send_file(pdf_path, as_attachment=True, download_name='RelatInss.pdf')
-            os.remove(cnis_path)
+            response = send_file(pdf, as_attachment=True, download_name='RelatInss.pdf')
             return response
     except Exception as e:
         app.logger.error(f"Error occurred: {str(e)}")
