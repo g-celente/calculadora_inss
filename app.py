@@ -28,7 +28,7 @@ app = Flask(__name__)
 
 def setup_locale():
     try:
-        locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     except locale.Error:
         print("Locale not supported")
 
@@ -475,17 +475,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if IDADE['AdicDt'].sum() == 0:
         if IDADE.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_id = IDADE.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por carencia:", dt_ap_id)
         else:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_id = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por idade:", dt_ap_id)
     else:
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_id = IDADE['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 'comp' é:", dt_ap_id)
@@ -868,13 +868,13 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #LOCALIZA A DATA DE APOSENTADORIA POR PONTOS
     if Regptos==1:
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_pt = LPS['comp'].dt.strftime('%b/%Y').iloc[0].capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("Data por pontos:", dt_ap_pt)
     else:
         #nao faz sentido, so p dar vasao ao fluxo e a variavel recever ALGUM VALOR...
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_pt = pts['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 'comp' é:", dt_ap_pt)
@@ -1144,13 +1144,13 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #LOCALIZA A DATA DE APOSENTADORIA PROGRESSIVA
     if Regprg==1:
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_prg = LPS['comp'].dt.strftime('%b/%Y').iloc[0].capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("Data por progressiva:", dt_ap_prg)
     else:
         #nao faz sentido, so p dar vazao ao fluxo
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_prg = prgv['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
 
@@ -1379,17 +1379,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if pdg100['AdicDt'].sum() == 0 and Reg100==1:
         if pdg100.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_100 = pdg100.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por pedagio100:", dt_ap_100)
         else:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_100 = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por pedagio100:", dt_ap_100)
     else:
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_100 = pdg100['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 100 é:", dt_ap_100)
@@ -1474,17 +1474,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if pdg50['AdicDt'].sum() == 0 and Reg50==1:
         if pdg50.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_50 = pdg50.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por pedagio50:", dt_ap_50)
         else:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_50 = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             print("Data por pedagio50:", dt_ap_50)
     else:
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_50 = pdg50['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
 
@@ -1716,17 +1716,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if pdg1p5['AdicDt'].sum() == 0 and Reg100to50==1:
         if pdg1p5.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_1p5 = pdg1p5.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por pedagio100p50:", dt_ap_1p5)
         else:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_1p5 = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por pedagio1p5:", dt_ap_1p5)
     else:
-        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         dt_ap_1p5 = pdg1p5['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 100p50 é:", dt_ap_1p5)
