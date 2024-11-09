@@ -15,10 +15,10 @@
             </i>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                <li class="nav_item"><a href="{{ url_for('dashboard') }}">Calculadora</a></li>
-                <li class="nav_item"><a href="#">Contato</a></li>
+                <li class="nav_item"><a href="{{ url_for('dashboard') }}">Cálculo INSS</a></li>
+                <li class="nav_item"><a href="#">Dúvidas e Suporte</a></li>
                 <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
-                <li class="nav_item"><a href="{{ url_for('logout') }}">Logout</a></li>
+                <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
             </ul>
         </nav>
     </header>
@@ -27,16 +27,34 @@
         
             <div id="cta">
                 <h1 class="title">
-                    Planeje Renda Futura <br>
-                    <span>INSS E DESEJADA</span>
+                    Seja Muito Bem Vindo Ao <br>
+                    <span>Sistema de Cálculo GRP</span>
                 </h1>
-    
-                <p class="descricao">
-                    Em duas etapas descubra sua Renda Futura resultado da soma do seu esforço de poupanca E do seu Benefício de Aposentadoria! 
-                </p>
                 
-                <div id="cta_botao">
-                    <a href="{{ url_for('dashboard') }}" class="button">Renda de Aposentadoria</a>
+                <div id="cta_container">
+                    <div id="cta_botao">
+                        <a href="{{ url_for('dashboard') }}" class="button">Fazer Cálculo da Previdência</a>
+                    </div>
+                    <div id="cta_botao">
+                        <a href="{{ url_for('dashboard') }}" class="button">Previdência + Rendimentos + RENDA POSSÍVEL</a>
+                    </div>
+                    <div id="cta_botao">
+                        <a href="{{ url_for('dashboard') }}" class="button">Previdência + Rendimentos + RENDA DESEJADA</a>
+                    </div>
+                </div>
+
+                <div class="instrucao">
+                    <h2>Instruções de Uso</h2>
+                    <p>
+                        Para fazer o Cálculo de renda é <br>
+                        preciso que você baixe o CNIS <br>
+                        no site da Previdência e anexe aqui o <br>
+                        mesmo aqui na calculadora.
+                    </p>
+
+                    <div id="cta_botao2">
+                        <a href="#menu" class="button">ASSISTA O VÍDEO EM COMO BAIXAR</a>
+                    </div>
                 </div>
     
             </div>

@@ -2913,7 +2913,8 @@ def gerar_relatorio():
             return response
     except Exception as e:
         app.logger.error(f"Error occurred: {str(e)}")
-        return f"An error occurred {str(e)}", 500
+        error = f'Ocorreu um erro ao tentar gerar seu pdf, por favor, verifique seu CNIS'
+        return render_template('calculadora.html', error=error)
 
 
 if __name__ == '__main__':

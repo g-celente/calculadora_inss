@@ -25,11 +25,11 @@ form {
   display: flex;
   flex-direction: column;
   gap: 25px;
-  padding: 50px;
+  padding: 40px;
+  border-style: solid;
   border-radius: 30px;
   border-color: #f87842;
-  width: 420px;
-  background-color: transparent; /* Fundo completamente transparente */
+  width: 400px; /* Fundo completamente transparente */
   backdrop-filter: blur(3px);
   z-index: 2;
 }
@@ -69,6 +69,8 @@ a {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  justify-content: center;
+  align-items: center;
 }
 
 .barra-horizontal {
