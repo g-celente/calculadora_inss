@@ -11,7 +11,7 @@
     <header>
         <nav id="navbar">
             <i class="fa-solid fa-burger" id="navicon">
-                <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"> CALCULADORA GRP
+                <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"> 
             </i>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
@@ -79,21 +79,21 @@
     </main>
     <footer class="footer">
         <div class="footer-content">
-            <h2 class="footer-title">CALCULADORA GRP</h2>
-            <p class="footer-description">
-                Em duas etapas, descubra sua Renda Futura 
-                resultado da soma do seu esforço de poupança e do seu Benefício de Aposentadoria!
-            </p>
-            <div class="footer-social">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-google-plus"></i></a>
-                <a href="#"><i class="fab fa-linkedin"></i></a>
-                <a href="#"><i class="fab fa-github"></i></a>
+            <div class="logos">
+                <div class="footer-left">
+                    <!-- Logo -->
+                    <img src="/static/assets/GRP branding.LOGOMARCA.png" alt="Logo" class="footer-logo">
+                </div>
+                <div class="footer-links">
+                    <a href="#quem-somos">Quem Somos</a>
+                    <a href="#como-funciona">Como Funciona</a>
+                    <a href="#suporte">Suporte 24h</a>
+                    <a href="#politica">Política de Privacidade</a>
+                    <a href="#contato">Fale Conosco</a>
+                </div>
             </div>
-            <p class="footer-copyright">
-                Copyright ©2020 GRP. Design By <a href="https://github.com/g-celente">Guilherme</a>
-            </p>
+            <div class="footer-copyright">
+            </div>
         </div>
     </footer>
 </body>

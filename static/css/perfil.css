@@ -238,53 +238,84 @@ button:hover {
 }
 
 .footer {
-  background-color: #1a1a1a;
-  color: white;
-  text-align: center;
-  padding: 30px 20px;
+  background-color: #1F2873;
+  color: #ffffff;
+  padding: 20px 40px;
 }
 
-.footer-title {
-  font-size: 32px;
-  margin-bottom: 15px;
+.logos {
+  display: flex;
+  margin-left: 70px;
 }
 
-.footer-description {
-  font-size: 14px;
-  margin-bottom: 20px;
-  max-width: 300px;
-  margin: 0 auto 20px auto;
+.footer-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between; /* Distribui o conteúdo horizontalmente */
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
 }
 
-.footer-social {
-  margin-bottom: 20px;
+/* Logo */
+.footer-left {
+  margin-right: 20px;
 }
 
-.footer-social a {
-  color: white;
-  font-size: 24px;
-  margin: 0 10px;
+.footer-logo {
+  width: 70px;
+  height: auto;
+}
+
+/* Links organizados em coluna */
+.footer-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-links a {
+  color: #ffffff;
   text-decoration: none;
+  font-size: 10px;
+  margin-bottom: 8px;
+  transition: color 0.3s;
 }
 
-.footer-social a:hover {
-  color: #ff4081; /* Cor de destaque ao passar o mouse */
+.footer-links a:hover {
+  color: #007bff;
 }
 
-.footer-social i {
-  transition: color 0.3s ease;
+/* Copyright no canto inferior direito */
+.footer-content {
+  position: relative;
+  padding-bottom: 40px; /* Espaço para o copyright */
 }
 
-.footer-copyright {
+.footer-content::after {
+  content: "Todos os direitos reservados - Copyright ©️ Razão Social";
+  position: absolute;
+  right: 0;
+  bottom: 0;
   font-size: 14px;
-  color: #ccc;
+  color: #d1d1d1;
 }
 
-.footer-copyright a {
-  color: #ff4081; /* Cor de destaque para o link */
-  text-decoration: none;
-}
-
-.footer-copyright a:hover {
-  text-decoration: underline;
+/* Responsivo para telas menores */
+@media (max-width: 768px) {
+  .footer-content {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+  }
+  .footer-left {
+      margin-bottom: 15px;
+  }
+  .footer-links {
+      align-items: center;
+  }
+  .footer-content::after {
+      position: static; /* Move o copyright para o centro em telas menores */
+      margin-top: 15px;
+      text-align: center;
+  }
 }
