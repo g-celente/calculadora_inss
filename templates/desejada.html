@@ -25,7 +25,7 @@
     <nav id="navbar-calculadora">
         <ul id="list">
             <li class="nav-list">
-                <a href="{{ url_for ('desejada')}}">Renda Desejada</a>
+                <a href="{{ url_for ('dashboard')}}">Calculadora de Renda</a>
             </li>
             <li class="nav-list">
                 <a href="{{ url_for ('possivel')}}">Renda Possível</a>
@@ -39,27 +39,36 @@
             <h6>Planeje & Calcule sua Renda Futura em 2 Etapas</h6>
             <p>Em duas etapas, descubra sua Renda Futura resultado da soma do seu esforço de poupança e do seu Benefício de Aposentadoria!</p>
         </div>
-
         <!-- Div para a Calculadora 1 - INSS -->
         <div class="calculadora">
-            <h2>Calcule Renda de Aposentadoria pelo INSS</h2>
-            <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data">
-                <label for="sexo">Sexo:</label>
-                <select name="sexo" id="sexo" required>
-                    <option value="1">Masculino</option>
-                    <option value="0">Feminino</option>
-                </select>
-                <label for="salario_bruto">Salário Bruto Atual (R$):</label>
-                <input type="number" name="salario_bruto" id="salario_bruto" min="0" required>
-                <label for="cnis_file">Upload CNIS</label>
-                <input type="file" name="cnis_file" accept=".pdf" id="cnis_file">
-                {% if error %}
-                <span class="invalid-feedback" role="alert">
-                    <strong style="color: red;">{{ error }}</strong>
-                </span>
-                {% endif %}
-                <button type="submit" class="botao_padrao">Calcular Benefício INSS</button>
+            <h2> Cálculo de Renda Desejada</h2>
+            <form id="income-simulation-form" method="POST" action="{{ url_for('criar_grafico_rendaDesejada')}}">
+                <label for="id_ini">Idade Atual:</label>
+                <input type="number" id="id_ini" name="id_ini" min="15" max="100" value="25">
+                
+                <label for="id_apos">Idade Aposentadoria:</label>
+                <input type="number" id="id_apos" name="id_apos" min="15" max="120" value="65">
+                
+                <label for="id_exp">Expectativa de Vida:</label>
+                <input type="number" id="id_exp" name="id_exp" min="15" max="150" value="85">
+                
+                <label for="id_reser">Reserva Financeira Atual (R$):</label>
+                <input type="number" id="id_reser" name="id_reser" min="0" value="1000">
+                
+                <label for="id_tx">Taxa real ano (%):</label>
+                <input type="number" id="id_tx" name="id_tx" min="0.1" value="4">
+                
+                <label for="id_inss">Benefício Esperado INSS (R$):</label>
+                <input type="number" id="id_inss" name="id_inss" min="0" value="0">
+                
+                <label for="id_dese">Renda Mensal DESEJADA (R$):</label>
+                <input type="number" id="id_dese" name="id_dese" min="0" value="1000">
+                
+                <label for="id_poss">Poupança Mensal POSSÍVEL (R$):</label>
+                <input type="number" id="id_poss" name="id_poss" min="0" value="100">
+                <button type="submit" id="submit-button">Condição p/ Renda Desejada</button>
             </form>
+            
         </div>
     </div>
 

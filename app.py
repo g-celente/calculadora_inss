@@ -2535,6 +2535,16 @@ def login():
 def dashboard():
     return render_template('calculadora.html')
 
+@app.route('/desejada')
+@token_required
+def desejada():
+    return render_template('desejada.html')
+
+@app.route('/possivel')
+@token_required
+def possivel():
+    return render_template('possivel.html')
+
 @app.route('/perfil')
 @token_required
 def perfil():
