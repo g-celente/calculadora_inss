@@ -2555,6 +2555,18 @@ def perfil():
 def sobre():
     return render_template('sobre.html')
 
+@app.route('/compra-realizada', methods=['POST'])
+def webhook():
+    # Obtendo os dados enviados pelo webhook
+    data = request.json
+    
+    # Exibindo os dados recebidos no console
+    print("Dados recebidos no webhook:")
+    print(data)
+    
+    # Retornando uma resposta de sucesso para a API
+    return jsonify({"status": "sucesso", "message": "Dados recebidos"}), 200
+
 @app.route('/contato')
 @token_required
 def contato():
