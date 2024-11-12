@@ -2907,8 +2907,7 @@ def gerar_relatorio():
 
 
 def send_email(name, email, password):
-    email2 = 'guilherme.celente2@gmail.com'
-    msg = Message('Seus Dados de Acesso', recipients=[email2])
+    msg = Message('Seus Dados de Acesso', recipients=[email])
     msg.html = f'''
     <html>
     <body>
