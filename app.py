@@ -20,7 +20,7 @@ import os
 from io import BytesIO
 import pandas as pd
 import locale
-
+from flask_mail import Mail, Message
 
 
 
@@ -37,8 +37,18 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'supersecretkey'
 
-# Instância do SQLAlchemy
 db = SQLAlchemy(app)
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'contato.guiarendaprevidencia@gmail.com'
+app.config['MAIL_PASSWORD'] = 'qjwt kesm tyzt xgkk'
+app.config['MAIL_DEFAULT_SENDER'] = 'contato.guiarendaprevidencia@gmail.com'
+
+mail = Mail(app)
+
 
 # Modelo de usuário
 class User(db.Model):
@@ -2555,18 +2565,6 @@ def perfil():
 def sobre():
     return render_template('sobre.html')
 
-@app.route('/compra-realizada', methods=['POST'])
-def webhook():
-    # Obtendo os dados enviados pelo webhook
-    data = request.json
-    
-    # Exibindo os dados recebidos no console
-    print("Dados recebidos no webhook:")
-    print(data)
-    
-    # Retornando uma resposta de sucesso para a API
-    return jsonify({"status": "sucesso", "message": "Dados recebidos"}), 200
-
 @app.route('/contato')
 @token_required
 def contato():
@@ -2937,6 +2935,70 @@ def gerar_relatorio():
         app.logger.error(f"Error occurred: {str(e)}")
         error = f'Ocorreu um erro ao tentar gerar seu pdf, por favor, verifique seu CNIS'
         return render_template('calculadora.html', error=error)
+
+
+
+def send_email(name, email, password):
+    email2 = 'guilherme.celente2@gmail.com'
+    msg = Message('Seus Dados de Acesso', recipients=[email2])
+    msg.html = f'''
+    <html>
+    <body>
+        <p>Olá <strong>{name}</strong>,</p>
+        
+        <p>Obrigado por sua compra! Aqui estão seus dados de acesso:</p>
+        <p><strong>Email:</strong> {email}<br>
+        <strong>Senha:</strong> {password}</p>
+
+        <p>Por favor, faça login no sistema e altere sua senha no primeiro acesso.</p>
+
+        <!-- Links para a plataforma -->
+        <p>Acesse a plataforma:</p>
+        <p><a href="https://app.guiarendaprevidencia.com.br/login">Login: https://app.guiarendaprevidencia.com.br/login</a></p>
+        <p><a href="https://app.guiarendaprevidencia.com.br/forgotPassword">Refazer a Senha: https://app.guiarendaprevidencia.com.br/forgotPassword</a></p>
+
+        <p>Atenciosamente,<br>
+        <strong>Sua Equipe</strong></p>
+    </body>
+    </html>
+    '''
+    mail.send(msg)
+
+# Função de registro para o webhook
+def register_via_webhook(name, email, password):
+    hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+        return {"status": "erro", "message": "Usuário já registrado"}
+
+    new_user = User(name=name, email=email, password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    send_email(name, email, password)
+
+    return {"status": "sucesso", "message": "Usuário registrado e email enviado"}
+
+# Rota do webhook que registra e envia o email
+@app.route('/compra-realizada', methods=['POST'])
+def webhook():
+    data = request.json
+
+    print(data)
+    
+    # Extraindo nome e email do cliente
+    customer_name = data.get('Customer', {}).get('full_name')
+    customer_email = data.get('Customer', {}).get('email')
+
+    # Gerando uma senha aleatória
+    password = 'pwdXhy'
+
+    # Registrando o usuário e enviando o email
+    response = register_via_webhook(customer_name, customer_email, password)
+    
+    return jsonify(response), 200
 
 
 if __name__ == '__main__':
