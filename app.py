@@ -2483,38 +2483,6 @@ def verifica_cnis(cnis_path):
                         pare = 1
     return contapalavras
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-
-    token = request.cookies.get('auth-token')
-
-    if token:
-        return render_template('calculadora.html')
-    
-    if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['password_confirmation']
-        hashed_password = generate_password_hash(password, 'pbkdf2:sha256')
-
-        if password != confirm_password:
-            error_password = 'As senhas não conhecidem'
-            return render_template('auth/registro.html', error_password=error_password)
-
-        user = User.query.filter_by(email=email).first()
-
-        if user:
-            error = 'Usuário Já Registrado'
-            return render_template('auth/registro.html', error=error)
-
-        new_user = User(name=name, email=email, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        flash('Registro realizado com sucesso!')
-        return redirect(url_for('login'))
-    return render_template('auth/registro.html')
-
 # Rota para login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
