@@ -12,7 +12,7 @@
     <header>
         <nav id="navbar">
             <i class="fa-solid fa-burger" id="navicon">
-                <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo">
+                <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
             </i>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
@@ -36,7 +36,7 @@
     <div class="container">
         <div class='Titulo'>
             <h1>Planeje Renda Futura: INSS, Desejada & Possível</h1>
-            <h6>Planeje & Calcule sua Renda Futura em 2 Etapas</h6>
+            <h4>Planeje & Calcule sua Renda Futura em 2 Etapas</h4>
             <p>Em duas etapas, descubra sua Renda Futura resultado da soma do seu esforço de poupança e do seu Benefício de Aposentadoria!</p>
         </div>
         <div class="calculadora">

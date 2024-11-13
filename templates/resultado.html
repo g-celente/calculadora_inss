@@ -7,13 +7,34 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+
+        /* Contêiner para centralizar a imagem e o texto */
+        .center-container {
+            text-align: center;
+        }
+
+        /* Estilo para a imagem */
+        .center-container img {
+            width: 450px;
+            height: 450px;
+            margin-bottom: 20px;
+        }
+
+        /* Estilo para o texto */
+        .center-container h2 {
+            font-size: 28px;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>    
 </head>
 <body>
     <main>
         <header>
             <nav id="navbar">
                 <i class="fa-solid fa-burger" id="navicon">
-                    <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"> 
+                    <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
                 </i>
                 <ul id="nav_list">
                     <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
@@ -28,8 +49,10 @@
                 {% if grafico_base64 %}
                     <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Gráfico Renda Possível" style="width:100%; margin-top: 20px;">
                 {% else %}
-                    <img src="/static/assets/download (1).jpeg" alt="Nada Encontrado" style="width:100%; margin-top: 20px;">
-                    <h2>Ops, Nenhum Dado Encontrado</h2>
+                    <div class="center-container">
+                        <img src="/static/assets/7265556.webp" alt="Nada Encontrado">
+                        <h2>Ops, Nenhum Dado Encontrado</h2>
+                    </div>
                 {% endif %}
             </div>
         </section>

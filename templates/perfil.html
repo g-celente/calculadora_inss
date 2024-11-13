@@ -12,7 +12,7 @@
     <header>
         <nav id="navbar">
             <i class="fa-solid fa-burger" id="navicon">
-                <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"> 
+                <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
             </i>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
@@ -25,15 +25,6 @@
     <main>
         <div class="page-background">
             <div class="container pt-5 flex flex-column justify-center">
-                <div class="user-img flex gap-1 align-center mb-5">
-                    <img
-                      src="/static/assets/user_default_png.png"
-                      alt="Usuário sem imagem"
-                      width="200px"
-                    />
-                    <!-- Se houver uma imagem de usuário, este img abaixo seria usado -->
-                    <!-- <img src="user_image_url" alt="Imagem do Usuário" style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%;" /> -->
-                </div>
                 
                 <!-- Exibir Nome e Email do Usuário -->
                 {% if user %}

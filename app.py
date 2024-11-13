@@ -2679,192 +2679,197 @@ def logout():
 @app.route('/grafico_renda_desejada', methods=['POST'])
 @token_required
 def criar_grafico_rendaDesejada():
-    # Obter os dados do formulário
-    idade_inicial = int(request.form['id_ini'])
-    idade_aposentadoria = int(request.form['id_apos'])
-    expec_vida = int(request.form['id_exp'])
-    reserva = float(request.form['id_reser'])
-    inss = float(request.form['id_inss'])
-    renda_desejada = float(request.form['id_dese'])
-    ret_invest_anual = float(request.form['id_tx']) / 100
-    ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
-
-    complemento = renda_desejada - inss
-    idade = np.arange(idade_inicial, expec_vida + 1)
-    salario = np.where(idade < idade_aposentadoria, 0, renda_desejada)
-    complemento_col = np.where(idade < idade_aposentadoria, 0, complemento)
-
-    # Função para calcular o valor futuro (FV)
-    def FV(rate, nper, pmt):
-        if rate == 0:
-            return pmt * nper
-        return pmt * ((1 + rate) ** nper - 1) / rate
-
-    # Função para calcular 'Poupanca' e 'Acumula'
-    def calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal):
-        poupanca = np.zeros_like(idade, dtype=float)
-        for i in range(len(idade)):
-            if idade[i] < idade_aposentadoria:
-                poupanca[i] = FV(ret_invest_mensal, 12, D5)
-            else:
-                poupanca[i] = -FV(ret_invest_mensal, 12, complemento_col[i])
-        return poupanca
-
-    def calcular_acumula(poupanca, reserva, ret_invest_anual):
-        acumula = np.zeros_like(poupanca, dtype=float)
-        acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
-        for i in range(1, len(poupanca)):
-            acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
-        return acumula
-
-    # Função objetivo para otimização
-    def func_objetivo(D5):
-        poupanca = calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal)
-        acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
-        return abs(acumula[-1])
-
-    # Otimização para encontrar o valor de D5
-    from scipy.optimize import fminbound
-    D5_otimo = fminbound(func_objetivo, 0.0, 1000000)
-
-    # Calcular as colunas finais
-    poupanca_final = calcular_poupanca(D5_otimo, idade, salario, complemento_col, ret_invest_mensal)
-    acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
-
-    # DataFrame para o gráfico
-    RDB = pd.DataFrame({
-        'Idade': idade,
-        'Salario': salario,
-        'Complemento': complemento_col,
-        'Poupanca': poupanca_final.round(2),
-        'Acumula': acumula_final.round(2)
-    })
-
-    # Configurações do gráfico
-    fig, ax1 = plt.subplots(figsize=(13, 7))
-    ax1.set_xlim([idade_inicial, expec_vida])
-    ax1.set_xlabel('Idade', fontweight='bold', fontsize=15)
-    ax1.set_ylabel('Renda (R$)', fontweight='bold', fontsize=15)
-    ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], [D5_otimo] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 'r.:', linewidth=2, markersize=8, label='Poupança')
-    ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], [renda_desejada] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 'g--', linewidth=5, label='Renda')
-
-    ax2 = ax1.twinx()
-    ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
-    ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
-
-    # Título e legendas
-    fig.suptitle('Condições para Renda Desejada', fontweight='bold', fontsize=20)
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
-
-    # Salvar o gráfico em memória no formato base64
-    buffer = BytesIO()
-    plt.savefig(buffer, format="png")
-    buffer.seek(0)
-    grafico_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    buffer.close()
     
-    # Enviar o gráfico codificado para o template
-    return render_template('resultado.html', grafico_base64=grafico_base64)
+    if request.method == 'POST':
+        idade_inicial = int(request.form['id_ini'])
+        idade_aposentadoria = int(request.form['id_apos'])
+        expec_vida = int(request.form['id_exp'])
+        reserva = float(request.form['id_reser'])
+        inss = float(request.form['id_inss'])
+        renda_desejada = float(request.form['id_dese'])
+        ret_invest_anual = float(request.form['id_tx']) / 100
+        ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
+
+        complemento = renda_desejada - inss
+        idade = np.arange(idade_inicial, expec_vida + 1)
+        salario = np.where(idade < idade_aposentadoria, 0, renda_desejada)
+        complemento_col = np.where(idade < idade_aposentadoria, 0, complemento)
+
+        # Função para calcular o valor futuro (FV)
+        def FV(rate, nper, pmt):
+            if rate == 0:
+                return pmt * nper
+            return pmt * ((1 + rate) ** nper - 1) / rate
+
+        # Função para calcular 'Poupanca' e 'Acumula'
+        def calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal):
+            poupanca = np.zeros_like(idade, dtype=float)
+            for i in range(len(idade)):
+                if idade[i] < idade_aposentadoria:
+                    poupanca[i] = FV(ret_invest_mensal, 12, D5)
+                else:
+                    poupanca[i] = -FV(ret_invest_mensal, 12, complemento_col[i])
+            return poupanca
+
+        def calcular_acumula(poupanca, reserva, ret_invest_anual):
+            acumula = np.zeros_like(poupanca, dtype=float)
+            acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
+            for i in range(1, len(poupanca)):
+                acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
+            return acumula
+
+        # Função objetivo para otimização
+        def func_objetivo(D5):
+            poupanca = calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal)
+            acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
+            return abs(acumula[-1])
+
+        # Otimização para encontrar o valor de D5
+        from scipy.optimize import fminbound
+        D5_otimo = fminbound(func_objetivo, 0.0, 1000000)
+
+        # Calcular as colunas finais
+        poupanca_final = calcular_poupanca(D5_otimo, idade, salario, complemento_col, ret_invest_mensal)
+        acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
+
+        # DataFrame para o gráfico
+        RDB = pd.DataFrame({
+            'Idade': idade,
+            'Salario': salario,
+            'Complemento': complemento_col,
+            'Poupanca': poupanca_final.round(2),
+            'Acumula': acumula_final.round(2)
+        })
+
+        # Configurações do gráfico
+        fig, ax1 = plt.subplots(figsize=(13, 7))
+        ax1.set_xlim([idade_inicial, expec_vida])
+        ax1.set_xlabel('Idade', fontweight='bold', fontsize=15)
+        ax1.set_ylabel('Renda (R$)', fontweight='bold', fontsize=15)
+        ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], [D5_otimo] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 'r.:', linewidth=2, markersize=8, label='Poupança')
+        ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], [renda_desejada] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 'g--', linewidth=5, label='Renda')
+
+        ax2 = ax1.twinx()
+        ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
+        ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
+
+        # Título e legendas
+        fig.suptitle('Condições para Renda Desejada', fontweight='bold', fontsize=20)
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
+
+        # Salvar o gráfico em memória no formato base64
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        grafico_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        buffer.close()
+        
+        # Enviar o gráfico codificado para o template
+        return render_template('resultado.html', grafico_base64=grafico_base64)
+    
+    return render_template('resultado.html')
 
 #funcao cria grafico renda possivel
-@app.route('/grafico_renda_possivel', methods=['POST'])
+@app.route('/grafico_renda_possivel', methods=['POST', 'GET'])
 @token_required
 def criar_grafico_rendaPossivel():
-    # Obter os dados do formulário
-    idade_inicial = int(request.form['id_ini'])
-    idade_aposentadoria = int(request.form['id_apos'])
-    expec_vida = int(request.form['id_exp'])
-    reserva = float(request.form['id_reser'])
-    inss = float(request.form['id_inss'])
-    poupanca_possivel = float(request.form['id_poss'])
-    ret_invest_anual = float(request.form['id_tx']) / 100
-    ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
+    if request.method == 'POST':
+        idade_inicial = int(request.form['id_ini'])
+        idade_aposentadoria = int(request.form['id_apos'])
+        expec_vida = int(request.form['id_exp'])
+        reserva = float(request.form['id_reser'])
+        inss = float(request.form['id_inss'])
+        poupanca_possivel = float(request.form['id_poss'])
+        ret_invest_anual = float(request.form['id_tx']) / 100
+        ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
 
-    # Construir a coluna 'idade'
-    idade = np.arange(idade_inicial, expec_vida + 1)
+        # Construir a coluna 'idade'
+        idade = np.arange(idade_inicial, expec_vida + 1)
 
-    # Função para calcular o valor futuro (FV)
-    def FV(rate, nper, pmt):
-        if rate == 0:
-            return pmt * nper
-        return pmt * ((1 + rate) ** nper - 1) / rate
+        # Função para calcular o valor futuro (FV)
+        def FV(rate, nper, pmt):
+            if rate == 0:
+                return pmt * nper
+            return pmt * ((1 + rate) ** nper - 1) / rate
 
-    # Funções para calcular 'Poupanca' e 'Acumula'
-    def calcular_poupanca(D3, idade, ret_invest_mensal):
-        poupanca = np.zeros_like(idade, dtype=float)
-        for i in range(len(idade)):
-            if idade[i] < idade_aposentadoria:
-                poupanca[i] = FV(ret_invest_mensal, 12, poupanca_possivel)
-            else:
-                poupanca[i] = -FV(ret_invest_mensal, 12, D3)
-        return poupanca
+        # Funções para calcular 'Poupanca' e 'Acumula'
+        def calcular_poupanca(D3, idade, ret_invest_mensal):
+            poupanca = np.zeros_like(idade, dtype=float)
+            for i in range(len(idade)):
+                if idade[i] < idade_aposentadoria:
+                    poupanca[i] = FV(ret_invest_mensal, 12, poupanca_possivel)
+                else:
+                    poupanca[i] = -FV(ret_invest_mensal, 12, D3)
+            return poupanca
 
-    def calcular_acumula(poupanca, reserva, ret_invest_anual):
-        acumula = np.zeros_like(poupanca, dtype=float)
-        acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
-        for i in range(1, len(poupanca)):
-            acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
-        return acumula
+        def calcular_acumula(poupanca, reserva, ret_invest_anual):
+            acumula = np.zeros_like(poupanca, dtype=float)
+            acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
+            for i in range(1, len(poupanca)):
+                acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
+            return acumula
 
-    # Função de objetivo para otimização
-    def func_objetivo(D3):
-        poupanca = calcular_poupanca(D3, idade, ret_invest_mensal)
-        acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
-        return abs(acumula[-1])
+        # Função de objetivo para otimização
+        def func_objetivo(D3):
+            poupanca = calcular_poupanca(D3, idade, ret_invest_mensal)
+            acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
+            return abs(acumula[-1])
 
-    # Determinar o valor ótimo de D3 usando a função objetivo
-    from scipy.optimize import fminbound
-    D3_otimo = fminbound(func_objetivo, 0, 1000000)
+        # Determinar o valor ótimo de D3 usando a função objetivo
+        from scipy.optimize import fminbound
+        D3_otimo = fminbound(func_objetivo, 0, 1000000)
 
-    # Calcular as colunas finais com o valor ótimo de D3
-    salario_final = np.where(idade < idade_aposentadoria, 0, inss + D3_otimo)
-    poupanca_final = calcular_poupanca(D3_otimo, idade, ret_invest_mensal)
-    acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
+        # Calcular as colunas finais com o valor ótimo de D3
+        salario_final = np.where(idade < idade_aposentadoria, 0, inss + D3_otimo)
+        poupanca_final = calcular_poupanca(D3_otimo, idade, ret_invest_mensal)
+        acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
 
-    # Criar o DataFrame e configurar o gráfico
-    RDB = pd.DataFrame({
-        'Idade': idade,
-        'Salario': salario_final.round(2),
-        'Complemento': np.where(idade < idade_aposentadoria, 0, D3_otimo).round(2),
-        'Poupanca': poupanca_final.round(2),
-        'Acumula': acumula_final.round(2)
-    })
+        # Criar o DataFrame e configurar o gráfico
+        RDB = pd.DataFrame({
+            'Idade': idade,
+            'Salario': salario_final.round(2),
+            'Complemento': np.where(idade < idade_aposentadoria, 0, D3_otimo).round(2),
+            'Poupanca': poupanca_final.round(2),
+            'Acumula': acumula_final.round(2)
+        })
 
-    # Configurações do gráfico
-    fig, ax1 = plt.subplots(figsize=(13, 7))
-    ax1.set_xlim([idade_inicial, expec_vida])
-    ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
-    ax1.set_xlabel('Idade', fontweight='bold', fontsize=15)
-    ax1.set_ylabel('Renda (R$)', fontweight='bold', fontsize=15)
+        # Configurações do gráfico
+        fig, ax1 = plt.subplots(figsize=(13, 7))
+        ax1.set_xlim([idade_inicial, expec_vida])
+        ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
+        ax1.set_xlabel('Idade', fontweight='bold', fontsize=15)
+        ax1.set_ylabel('Renda (R$)', fontweight='bold', fontsize=15)
 
-    # Plotando a curva de Poupança e a curva de Renda
-    ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
-             [poupanca_possivel] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
-             'r.:', linewidth=2, markersize=8, label='Poupança')
-    ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
-             [RDB['Salario'].max()] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
-             'g--', linewidth=5, label='Renda')
+        # Plotando a curva de Poupança e a curva de Renda
+        ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
+                [poupanca_possivel] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
+                'r.:', linewidth=2, markersize=8, label='Poupança')
+        ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
+                [RDB['Salario'].max()] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
+                'g--', linewidth=5, label='Renda')
 
-    # Configurações do eixo Y secundário
-    ax2 = ax1.twinx()
-    ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
-    ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
+        # Configurações do eixo Y secundário
+        ax2 = ax1.twinx()
+        ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
+        ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
 
-    # Legendas e título
-    fig.suptitle('Condições para Renda Possível', fontweight='bold', fontsize=20)
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
+        # Legendas e título
+        fig.suptitle('Condições para Renda Possível', fontweight='bold', fontsize=20)
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
 
-    # Salvando o gráfico em memória no formato base64
-    buffer = BytesIO()
-    plt.savefig(buffer, format="png")
-    buffer.seek(0)
-    grafico_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    buffer.close()
+        # Salvando o gráfico em memória no formato base64
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        grafico_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        buffer.close()
+        
+        # Enviar o gráfico codificado para o template
+        return render_template('resultado.html', grafico_base64=grafico_base64)
     
-    # Enviar o gráfico codificado para o template
-    return render_template('resultado.html', grafico_base64=grafico_base64)
+    return render_template('resultado.html')
 
 @app.route('/gerar_relatorio', methods=['POST'])
 @token_required
