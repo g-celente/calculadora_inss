@@ -2528,6 +2528,11 @@ def possivel():
 def perfil():
     return render_template('perfil.html')
 
+@app.errorhandler(404)
+def page_not_found(e):
+    # Exibe uma página 404 personalizada ou redireciona para uma página desejada
+    return render_template('404.html'), 404
+
 @app.route('/')
 @token_required
 def sobre():

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulação INSS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Not Found</title>
     <style>
 
         /* Contêiner para centralizar a imagem e o texto */
@@ -27,33 +26,22 @@
             color: #333;
             font-weight: bold;
         }
-    </style>    
+    </style>
 </head>
 <body>
+    <header>
+        <nav id="navbar">
+            <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
+            <ul id="nav_list">
+                <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
+            </ul>
+        </nav>
+    </header>
     <main>
-        <header>
-            <nav id="navbar">
-                <i class="fa-solid fa-burger" id="navicon">
-                    <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
-                </i>
-                <ul id="nav_list">
-                    <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                    <li class="nav_item"><a href="#">Dúvidas e Suporte</a></li>
-                    <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
-                    <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
-                </ul>
-            </nav>
-        </header>
         <section>
-            <div class="container">
-                {% if grafico_base64 %}
-                    <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Gráfico Renda Possível" style="width:100%; margin-top: 20px;">
-                {% else %}
-                    <div class="center-container">
-                        <img src="/static/assets/7265556.webp" alt="Nada Encontrado">
-                        <h2>Ops, Nenhum Dado Encontrado</h2>
-                    </div>
-                {% endif %}
+            <div class="center-container">
+                <img src="/static/assets/7265556.webp" alt="Nada Encontrado">
+                <h2>Ops, Nenhuma Página Encontrada</h2>
             </div>
         </section>
     </main>
@@ -77,3 +65,4 @@
         </div>
     </footer>
 </body>
+</html>
