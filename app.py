@@ -21,6 +21,7 @@ from io import BytesIO
 import pandas as pd
 import locale
 from flask_mail import Mail, Message
+import matplotlib.image as mpimg
 
 
 
@@ -2758,22 +2759,25 @@ def criar_grafico_rendaDesejada():
         ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
         ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
 
+        img = mpimg.imread('static/assets/GRP branding.LOGOMARCA.png')  # Substitua pelo caminho da sua imagem
+        ax1.imshow(img, aspect='auto', extent=[idade_inicial, expec_vida, 0, RDB['Acumula'].max() * 1.1], alpha=0.2)
+
         # Título e legendas
         fig.suptitle('Condições para Renda Desejada', fontweight='bold', fontsize=20)
         ax1.legend(loc='upper left')
         ax2.legend(loc='upper right')
 
-        # Salvar o gráfico em memória no formato base64
-        buffer = BytesIO()
-        plt.savefig(buffer, format="png")
-        buffer.seek(0)
-        grafico_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        buffer.close()
-        
-        # Enviar o gráfico codificado para o template
-        return render_template('resultado.html', grafico_base64=grafico_base64)
-    
-    return render_template('resultado.html')
+        # Salvar o gráfico em PDF diretamente no buffer
+        pdf_buffer = BytesIO()
+        plt.savefig(pdf_buffer, format='pdf')
+        pdf_buffer.seek(0)
+
+        # Converta o conteúdo do PDF para base64 para exibição no frontend
+        pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
+        session['pdf_base64'] = pdf_base64
+
+        # Enviar o PDF codificado para o frontend
+        return render_template('resultado.html', pdf_base64=pdf_base64)
 
 #funcao cria grafico renda possivel
 @app.route('/grafico_renda_possivel', methods=['POST', 'GET'])
@@ -2822,7 +2826,6 @@ def criar_grafico_rendaPossivel():
             return abs(acumula[-1])
 
         # Determinar o valor ótimo de D3 usando a função objetivo
-        from scipy.optimize import fminbound
         D3_otimo = fminbound(func_objetivo, 0, 1000000)
 
         # Calcular as colunas finais com o valor ótimo de D3
@@ -2859,22 +2862,29 @@ def criar_grafico_rendaPossivel():
         ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
         ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
 
+        # Adicionando a imagem no gráfico
+        img = mpimg.imread('static/assets/GRP branding.LOGOMARCA.png')  # Substitua pelo caminho da sua imagem
+        ax1.imshow(img, aspect='auto', extent=[idade_inicial, expec_vida, 0, RDB['Acumula'].max() * 1.1], alpha=0.2)
+
         # Legendas e título
-        fig.suptitle('Condições para Renda Possível', fontweight='bold', fontsize=20)
+        fig.suptitle('Condições para Renda Possível - Planejamento de Aposentadoria', fontweight='bold', fontsize=20)
         ax1.legend(loc='upper left')
         ax2.legend(loc='upper right')
 
         # Salvando o gráfico em memória no formato base64
-        buffer = BytesIO()
-        plt.savefig(buffer, format="png")
-        buffer.seek(0)
-        grafico_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        buffer.close()
-        
-        # Enviar o gráfico codificado para o template
-        return render_template('resultado.html', grafico_base64=grafico_base64)
+        pdf_buffer = BytesIO()
+        plt.savefig(pdf_buffer, format='pdf')
+        pdf_buffer.seek(0)
+
+        # Converta o conteúdo do PDF para base64 para exibição no frontend
+        pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
+        session['pdf_base64'] = pdf_base64
+
+        # Enviar o PDF codificado para o frontend
+        return render_template('resultado.html', pdf_base64=pdf_base64)
     
     return render_template('resultado.html')
+
 
 @app.route('/gerar_relatorio', methods=['POST'])
 @token_required

@@ -1,7 +1,8 @@
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Roboto', sans-serif; /* Aplicando Roboto como fonte padrão */
+    font-weight: 600; /* Definindo o peso 600 (negrito) como padrão */
     background-color: #f4f6f9;
-    color: #333;
+    color: #000000;
     margin: 0;
     padding: 0;
 }
@@ -11,6 +12,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    z-index: 1;
+    height: 80px;
 }
 
 #navicon {
@@ -19,9 +22,12 @@ body {
 }
 
 #logo {
-    height: 80px; /* Ajuste a altura conforme necessário */
-    margin-right: 8px; /* Espaço entre a logo e o texto */
-    vertical-align: middle; /* Alinha a logo verticalmente com o texto */
+    height: 180px; /* Ajuste a altura conforme necessário */
+    margin-right: 8px;
+    vertical-align: middle;
+    position: relative;
+    top: 40px; /* Ajuste para mover a logo para baixo */
+    z-index: 2; /* Alinha a logo verticalmente com o texto */
 }
 
 #nav_list {
@@ -62,7 +68,7 @@ header {
 
 
 .container {
-    width: 90%;
+    max-width: 80%;
     margin: 0 auto;
     padding: 20px;
 }
@@ -77,6 +83,7 @@ form {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    align-items: center;
 }
 
 .form-group {
@@ -89,8 +96,16 @@ label {
     margin-bottom: 5px;
 }
 
-input, select {
+input {
     width: 97%;
+    padding: 10px;
+    margin: 5px 0 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+select {
+    width: 98.5%;
     padding: 10px;
     margin: 5px 0 10px;
     border-radius: 5px;
@@ -175,7 +190,7 @@ button {
 
 button:hover {
     background-color: #1F2873; /* Laranja mais escuro no hover */
-    transform: scale(1.05);
+    transform: scale(1.008);
 }
 
 .btnPadrao:hover {
@@ -298,10 +313,6 @@ button:hover {
     }
 }
 
-.titulo {
-    justify-content: center;
-}
-
 .instrucao {
     background-color: #1F2873; /* Azul mais suave */
     color: white;
@@ -374,7 +385,7 @@ button:hover {
 
 /* Botão "?" */
 .info-button {
-    background-color: #ff6b35;
+    background-color: #808080;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -428,11 +439,79 @@ button:hover {
 .veja-tambem {
     display: inline-block;
     padding: 10px 20px;
-    color: #ffffff;
-    background-color: #ff4500; /* Cor laranja */
+    color: #1F2873; /* Cor laranja */
     text-decoration: none;
     font-weight: bold;
     border-radius: 5px;
     transition: background-color 0.3s, transform 0.2s;
 }
 
+.titulo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px;  
+    border-radius: 10px;
+}
+
+.titulo h1 {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    font-family: 'Arial', sans-serif;
+}
+
+.titulo h4 {
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 15px;
+    font-family: 'Arial', sans-serif;
+}
+
+.titulo p {
+    font-size: 16px;
+    color: #777;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+#menu {
+    text-align: center;
+    align-items: center;
+}
+
+.custom-select {
+    position: relative;
+    display: inline-block;
+    width: 98.5%;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  
+  .selected {
+    width: 98.5%;
+    padding: 10px;
+    margin: 5px 0 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  
+  .options li {
+    width: 98.5%;
+    padding: 10px;
+    margin: 5px 0 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .options li:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+  }
+  

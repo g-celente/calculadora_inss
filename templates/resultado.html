@@ -6,26 +6,37 @@
     <title>Simulação INSS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-
-        /* Contêiner para centralizar a imagem e o texto */
+        /* Estilização do centro da imagem */
         .center-container {
             text-align: center;
+            margin-top: 20px;
         }
 
-        /* Estilo para a imagem */
-        .center-container img {
-            width: 450px;
-            height: 450px;
+        /* Estilo do iframe para o PDF */
+        .center-container iframe {
+            width: 100%;  /* Faz o iframe ocupar 100% da largura da tela */
+            height: 100vh; /* Faz o iframe ocupar a altura total da janela */
+            border: none;  /* Remove as bordas do iframe */
             margin-bottom: 20px;
         }
 
-        /* Estilo para o texto */
-        .center-container h2 {
-            font-size: 28px;
-            color: #333;
-            font-weight: bold;
+        /* Estilização do botão de download */
+        .download-button {
+            background-color: #ff6b35;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            margin: auto;  /* Centraliza o botão */
+        }
+
+        .download-button:hover {
+            background-color: #ff5a1f;
         }
     </style>    
 </head>
@@ -46,8 +57,11 @@
         </header>
         <section>
             <div class="container">
-                {% if grafico_base64 %}
-                    <img src="data:image/png;base64,{{ grafico_base64 }}" alt="Gráfico Renda Possível" style="width:100%; margin-top: 20px;">
+                {% if pdf_base64 %}
+                    <div class="center-container">
+                        <!-- Aumenta o tamanho do iframe e ajusta para tela cheia -->
+                        <iframe src="data:application/pdf;base64,{{ pdf_base64 }}" alt="Gráfico Renda Desejada"></iframe>
+                    </div>
                 {% else %}
                     <div class="center-container">
                         <img src="/static/assets/7265556.webp" alt="Nada Encontrado">
@@ -61,19 +75,17 @@
         <div class="footer-content">
             <div class="logos">
                 <div class="footer-left">
-                    <!-- Logo -->
                     <img src="/static/assets/GRP branding.LOGOMARCA.png" alt="Logo" class="footer-logo">
                 </div>
                 <div class="footer-links">
                     <a href="https://guiarendaprevidencia.com.br/app-quemsomos/">Quem Somos</a>
-                    <a href="https://guiarendaprevidencia.com.br/como-funciona/">Como Funciona</a>
+                    <a href="#como-funciona">Como Funciona</a>
                     <a href="https://guiarendaprevidencia.com.br/duvidas-comuns-app/">Dúvidas Comuns</a>
                     <a href="https://guiarendaprevidencia.com.br/politicas-de-privacidade-app/">Política de Privacidade</a>
                     <a href="https://guiarendaprevidencia.com.br/fale-conosco-app/">Fale Conosco</a>
                 </div>
             </div>
-            <div class="footer-copyright">
-            </div>
         </div>
     </footer>
 </body>
+</html>

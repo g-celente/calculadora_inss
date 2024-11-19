@@ -35,32 +35,50 @@
     </nav>
 
     <div class="container">
-        <div class='Titulo'>
-            <h1>Planeje Renda Futura: INSS, Desejada & Possível</h1>
-            <h4>Planeje & Calcule sua Renda Futura em 2 Etapas</h4>
-            <p>Em duas etapas, descubra sua Renda Futura resultado da soma do seu esforço de poupança e do seu Benefício de Aposentadoria!</p>
+        <div class='titulo'>
+            <h1>Planeje sua Renda Futura do INSS</h1> 
+            <h4>Planeje e Calcule sua Renda Futura em 3 etapas</h4>
+            <p>Associe a sua projeção do INSS a sua carteira de investimentos <br>
+                gerando sua Renda DESEJADA e/ou Renda POSSÍVEL</p>
         </div>
 
         <!-- Div para a Calculadora 1 - INSS -->
         <div class="calculadora">
-            <h2>Calcule Renda de Aposentadoria pelo INSS</h2>
+            <h2 style="text-align: center;">Cálculadora de Previdência Privada</h2>
             <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data">
-                <label for="sexo">Sexo:</label>
-                <select name="sexo" id="sexo" required>
-                    <option value="1">Masculino</option>
-                    <option value="0">Feminino</option>
-                </select>
-                <label for="salario_bruto">Salário Bruto Atual (R$):</label>
-                <input type="number" name="salario_bruto" id="salario_bruto" min="0" required>
-                <label for="cnis_file">Upload CNIS</label>
-                <input type="file" name="cnis_file" accept=".pdf" id="cnis_file">
+                <div class="custom-select" id="custom-select">
+                    <div class="selected">Selecione o sexo</div>
+                    <ul class="options">
+                      <li data-value="1">Masculino</li>
+                      <li data-value="0">Feminino</li>
+                    </ul>
+                    <input type="hidden" name="sexo" id="sexo" required>
+                </div>
+        
+                <div class="form-group">
+                    <label for="salario_bruto">Salário Bruto Atual (R$):</label>
+                    <input type="number" name="salario_bruto" id="salario_bruto" min="0" required>
+                </div>
+        
+                <div class="form-group">
+                    <label for="cnis_file">Upload CNIS</label>
+                    <input type="file" name="cnis_file" accept=".pdf" id="cnis_file">
+                </div>
+        
                 {% if error %}
-                <span class="invalid-feedback" role="alert">
-                    <strong style="color: red;">{{ error }}</strong>
-                </span>
+                <div class="error-message">
+                    <strong>{{ error }}</strong>
+                </div>
                 {% endif %}
-                <button type="submit" class="botao_padrao">Calcular Benefício INSS</button>
+        
+                <div class="button-class">
+                    <button type="submit" class="botao_padrao">Calcular Benefício INSS</button>
+                </div>
             </form>
+        </div>
+        
+        <div class="titulo">
+            <h4>Após a geração do cálculo, nosso sistema realizará a geração de um download automático do seu relatório em PDF</h4>
         </div>
     </div>
 
@@ -88,3 +106,15 @@
 </body>
 </html>
 
+<script>
+    document.querySelectorAll('.options li').forEach(function(item) {
+        item.addEventListener('click', function() {
+            const value = item.getAttribute('data-value');
+            const displayText = item.innerText;
+            
+            // Atualiza o valor selecionado
+            document.querySelector('.selected').innerText = displayText;
+            document.querySelector('#sexo').value = value;
+        });
+    });
+</script>
