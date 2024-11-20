@@ -2901,6 +2901,8 @@ def gerar_relatorio():
         sx = int(request.form['sexo'])
         slbr = int(request.form['salario_bruto'])
 
+        print(sx, slbr, cnis_buffer)
+
         if n_clicks3 >= 0:
             # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
             if cnis_buffer.getbuffer().nbytes == 0:
