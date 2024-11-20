@@ -2229,7 +2229,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     import pdfplumber
 
-    pdf_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'mysiglas.pdf')
+    my_path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'mysiglas.pdf')
 
     def process_table(table):
         for i in range(len(table)):
@@ -2247,7 +2247,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     # Criar um DataFrame vazio
     mysgls = pd.DataFrame(columns=['Tipo', 'Grupo', 'Indicador', 'Descricao', 'Esclarecimentos'])
 
-    with pdfplumber.open(pdf_path) as pdf:
+    with pdfplumber.open(my_path) as pdf:
         for page_number in range(len(pdf.pages)):
             # Obtém a página
             page = pdf.pages[page_number]
