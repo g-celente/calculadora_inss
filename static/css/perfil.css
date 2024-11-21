@@ -242,43 +242,30 @@ button:hover {
 .footer {
   background-color: #1F2873;
   color: #ffffff;
-  padding: 20px 40px;
+  padding: 40px 20px;
+  text-align: center; /* Centraliza o conteúdo horizontalmente */
 }
 
-.logos {
-  display: flex;
-  margin-left: 70px;
-}
-
-.footer-content {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between; /* Distribui o conteúdo horizontalmente */
-  max-width: 1000px;
-  position: relative;
-}
-
-/* Logo */
-.footer-left {
-  margin-right: 20px;
-}
-
-.footer-logo {
-  width: 70px;
+.footer-logo img {
+  width: 100px;
   height: auto;
+  margin: 0 auto; /* Centraliza a logo */
 }
 
-/* Links organizados em coluna */
 .footer-links {
   display: flex;
   flex-direction: column;
+  justify-content: center; /* Centraliza os botões horizontalmente */
+  gap: 15px; /* Espaçamento entre os links */
+  margin: 20px 0; /* Espaço entre a logo e os links */
 }
 
 .footer-links a {
+  display: block;
+  text-align: center;
   color: #ffffff;
   text-decoration: none;
-  font-size: 13px;
-  margin-bottom: 8px;
+  font-size: 14px;
   transition: color 0.3s;
 }
 
@@ -286,37 +273,16 @@ button:hover {
   color: #007bff;
 }
 
-/* Copyright no canto inferior direito */
-.footer-content {
-  position: relative;
-  padding-bottom: 40px; /* Espaço para o copyright */
-}
-
-.footer-content::after {
-  content: "GRP 2024 © P&D DIGITAL LTDA. Todos os direitos reservados. CNPJ:44.325.141/0001-50";
-  position: absolute;
-  right: 0;
-  bottom: 0;
+.footer-copyright {
+  margin-top: 20px; /* Espaçamento entre os links e o texto de copyright */
   font-size: 14px;
   color: #d1d1d1;
 }
 
-/* Responsivo para telas menores */
+/* Responsivo */
 @media (max-width: 768px) {
-  .footer-content {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-  }
-  .footer-left {
-      margin-bottom: 15px;
-  }
   .footer-links {
-      align-items: center;
-  }
-  .footer-content::after {
-      position: static; /* Move o copyright para o centro em telas menores */
-      margin-top: 15px;
-      text-align: center;
+      flex-direction: column; /* Organiza os botões em coluna em telas menores */
+      gap: 10px;
   }
 }
