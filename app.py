@@ -1956,8 +1956,8 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         styles = getSampleStyleSheet()
         logo_path = "static/assets/GRP branding.LOGOMARCA.png"  # Substitua pelo caminho correto da sua imagem
         logo = Image(logo_path)
-        logo.drawHeight = 1 * inch  # Ajuste a altura da imagem
-        logo.drawWidth = 1 * inch  # Ajuste a largura da imagem
+        logo.drawHeight = 150  # Ajuste a altura da imagem
+        logo.drawWidth = 125 # Ajuste a largura da imagem
         logo.hAlign = 'CENTER'  # Alinhe a logo ao centro
 
         title = f"Análise do Extrato da Previdencia (CNIS)"
@@ -2765,7 +2765,7 @@ def criar_grafico_rendaDesejada():
         ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
         ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
 
-        img = mpimg.imread('static/assets/imagem_fundo_grafico.jpeg')  # Substitua pelo caminho da sua imagem
+        img = mpimg.imread('static/assets/GRP branding.LOGOMARCA.png')  # Substitua pelo caminho da sua imagem
         ax1.imshow(img, aspect='auto', extent=[idade_inicial, expec_vida, 0, RDB['Acumula'].max() * 1.1], alpha=0.2)
 
         # Título e legendas
@@ -2865,7 +2865,7 @@ def criar_grafico_rendaPossivel():
         ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
 
         # Adicionando a imagem no gráfico
-        img = mpimg.imread('static/assets/imagem_fundo_grafico.jpeg')  # Substitua pelo caminho da sua imagem
+        img = mpimg.imread('static/assets/GRP branding.LOGOMARCA.png')  # Substitua pelo caminho da sua imagem
         ax1.imshow(img, aspect='auto', extent=[idade_inicial, expec_vida, 0, RDB['Acumula'].max() * 1.1], alpha=0.2)
 
         # Legendas e título
