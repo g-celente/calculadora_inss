@@ -58,7 +58,12 @@
     width: 160px;
 
   }
-  
+  button:hover {
+    background-image: linear-gradient(#1F2873, #1F2873);
+    border-color: #1F2873;
+    background-color: #1F2873; /* Laranja mais escuro no hover */
+    transform: scale(1.08);
+  }
   
   a {
     color: rgb(0, 174, 255);
