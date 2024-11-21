@@ -249,7 +249,8 @@ button:hover {
     flex-direction: column;
     justify-content: center; /* Centraliza os botões horizontalmente */
     gap: 15px; /* Espaçamento entre os links */
-    margin: 20px 0; /* Espaço entre a logo e os links */
+    margin: 20px 0;
+    margin-bottom: 50px; /* Espaço entre a logo e os links */
 }
 
 .footer-links a {
@@ -428,14 +429,14 @@ button:hover {
     font-size: 36px;
     font-weight: bold;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: -19px;
     font-family: 'Arial', sans-serif;
 }
 
 .titulo h4 {
-    font-size: 20px;
+    font-size: 23px;
     color: #555;
-    margin-bottom: 15px;
+    margin-bottom: -5px;
     font-family: 'Arial', sans-serif;
 }
 

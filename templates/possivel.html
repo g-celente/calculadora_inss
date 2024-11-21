@@ -44,7 +44,7 @@
                 gerando sua Renda DESEJADA e/ou Renda POSSÍVEL</p>
         </div>
         <div class="calculadora">
-            <h2 style="text-align: center;">Cálculo Renda Possível Futura</h2>
+            <h2 style="color: #ff4500;">Cálculo RENDA POSSÍVEL Futura</h2>
             <form id="income-simulation-form" method="POST" action="{{ url_for('criar_grafico_rendaPossivel')}}">
                 <label for="id_ini">Idade Atual:</label>
                 <input type="number" id="id_ini" name="id_ini" min="15" max="100" value="25">
@@ -70,7 +70,7 @@
                 <label for="id_poss">Poupança Mensal POSSÍVEL (R$):</label>
                 <input type="number" id="id_poss" name="id_poss" min="0" value="100">
                 <div class="button-class" style="display: flex;">
-                    <button type="submit" id="submit-button">Condição p/ Renda Possível</button>
+                    <button type="submit" id="submit-button">CÁLCULO Renda Possível</button>
                     <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
                 </div>
             </form>
