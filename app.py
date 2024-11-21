@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -2778,11 +2778,8 @@ def criar_grafico_rendaDesejada():
         plt.savefig(pdf_buffer, format='pdf')
         pdf_buffer.seek(0)
 
-        # Converta o conteúdo do PDF para base64 para exibição no frontend
-        pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
-
-        # Enviar o PDF codificado para o frontend
-        return render_template('resultado.html', pdf_base64=pdf_base64)
+        # Retornar a resposta
+        return send_file(pdf_buffer, as_attachment=True, download_name='GraficODesejada.pdf')
 
 #funcao cria grafico renda possivel
 @app.route('/grafico_renda_possivel', methods=['POST', 'GET'])
@@ -2880,11 +2877,8 @@ def criar_grafico_rendaPossivel():
         pdf_buffer = BytesIO()
         plt.savefig(pdf_buffer, format='pdf')
         pdf_buffer.seek(0)
-
-        # Converta o conteúdo do PDF para base64 para exibição no frontend
-        pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
         # Enviar o PDF codificado para o frontend
-        return render_template('resultado.html', pdf_base64=pdf_base64)
+        return send_file(pdf_buffer, as_attachment=True, download_name='Gráfigo Renda Possível.pdf')
     
     return render_template('resultado.html')
 
