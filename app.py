@@ -2774,7 +2774,6 @@ def criar_grafico_rendaDesejada():
 
         # Converta o conteúdo do PDF para base64 para exibição no frontend
         pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
-        session['pdf_base64'] = pdf_base64
 
         # Enviar o PDF codificado para o frontend
         return render_template('resultado.html', pdf_base64=pdf_base64)
@@ -2878,8 +2877,6 @@ def criar_grafico_rendaPossivel():
 
         # Converta o conteúdo do PDF para base64 para exibição no frontend
         pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode("utf-8")
-        session['pdf_base64'] = pdf_base64
-
         # Enviar o PDF codificado para o frontend
         return render_template('resultado.html', pdf_base64=pdf_base64)
     
