@@ -1953,12 +1953,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         doc = SimpleDocTemplate(filename, pagesize=letter)
 
         # Adicionar o título ao documento usando o estilo de parágrafo
-        styles = getSampleStyleSheet()
-        logo_path = "static/assets/GRP branding.LOGOMARCA.png"  # Substitua pelo caminho correto da sua imagem
-        logo = Image(logo_path)
-        logo.drawHeight = 150  # Ajuste a altura da imagem
-        logo.drawWidth = 125 # Ajuste a largura da imagem
-        logo.hAlign = 'CENTER'  # Alinhe a logo ao centro
+        styles = getSampleStyleSheet() # Alinhe a logo ao centro
 
         title = f"Análise do Extrato da Previdencia (CNIS)"
         title_paragraph = Paragraph(title, styles['Title'])
@@ -2112,7 +2107,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         table.setStyle(style)
 
         # Adicionar os elementos ao documento
-        content = [logo, Spacer(1, 0.2 * inch), line,title_paragraph, line, nome,Spacer(1, 0.1 * inch),line,\
+        content = [line,title_paragraph, line, nome,Spacer(1, 0.1 * inch),line,\
                    cadastro,nit,cpf,nascimento,mae,ingresso,extrato,analise,idade,contribuicao,nrosal,\
                    Spacer(1, 0.1 * inch),\
                    line,title_2,line,additional_3,Spacer(1, 0.1 * inch),table,Spacer(1, 0.1 * inch),nt_i,Spacer(1, 0.1 * inch),observacao, additional_paragraph_4,additional_5,\
