@@ -1954,7 +1954,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         logo_path = os.path.join(app.root_path, 'static', 'assets', 'GRP branding.LOGOMARCA.png')
 
-    # Adicionar a imagem do logo
+        # Adicionar a imagem do logo
         logo = Image(logo_path, width=120, height=150)
 
         # Adicionar o título ao documento usando o estilo de parágrafo
