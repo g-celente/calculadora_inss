@@ -1952,11 +1952,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         # Configurar o tamanho da página
         doc = SimpleDocTemplate(filename, pagesize=letter)
 
-        logo_path = os.path.join(app.root_path, 'static', 'assets', 'GRP branding.LOGOMARCA.png')
-
-        # Adicionar a imagem do logo
-        logo = Image(logo_path, width=120, height=150)
-
         # Adicionar o título ao documento usando o estilo de parágrafo
         styles = getSampleStyleSheet() # Alinhe a logo ao centro
 
@@ -2112,7 +2107,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         table.setStyle(style)
 
         # Adicionar os elementos ao documento
-        content = [logo,Spacer(1, 0.1 * inch),line,title_paragraph, line, nome,Spacer(1, 0.1 * inch),line,\
+        content = [line,title_paragraph, line, nome,Spacer(1, 0.1 * inch),line,\
                    cadastro,nit,cpf,nascimento,mae,ingresso,extrato,analise,idade,contribuicao,nrosal,\
                    Spacer(1, 0.1 * inch),\
                    line,title_2,line,additional_3,Spacer(1, 0.1 * inch),table,Spacer(1, 0.1 * inch),nt_i,Spacer(1, 0.1 * inch),observacao, additional_paragraph_4,additional_5,\
