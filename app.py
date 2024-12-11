@@ -2966,6 +2966,41 @@ def criar_grafico_rendaPossivel():
         poupanca_possivel = request.form['id_poss']
         ret_invest_anual = request.form['id_tx']
 
+        if not idade_inicial:
+            return render_template('possivel.html', erro_idade_inicial="Por favor, insira um valor na idade inicial")
+        
+        idade_inicial = int(idade_inicial)
+
+        if not idade_aposentadoria:
+            return render_template('possivel.html', erro_idade_aposentadoria="Por favor, insira um valor na idade de aposentadoria")
+
+        idade_aposentadoria = int(idade_aposentadoria)
+
+        if not expec_vida:
+            return render_template('possivel.html', erro_expectativa="Por favor, insira um valor na expectativa de vida")
+        
+        expec_vida = int(expec_vida)
+
+        if not reserva:
+            return render_template('possivel.html', erro_expectativa="Por favor, insira um valor na Reserva")
+        
+        reserva = float(reserva)
+
+        if not inss:
+            return render_template('possivel.html', erro_beneficio="Por favor, insira um valor válido no Inss")
+        
+        inss = float(inss)
+
+        if not poupanca_possivel:
+            return render_template('possivel.html', erro_poupanca="Por favor, insira um valor na poupança")
+        poupanca_possivel = float(poupanca_possivel)
+
+        if not ret_invest_anual:
+            return render_template('possivel.html', erro_anual="Por favor, insira um valor valido no investimento anual")
+        
+        ret_invest_anual = float(ret_invest_anual) / 100
+
+
         # Validações
         erro_idade_inicial = validar_idade_inicial(idade_inicial)
         erro_idade_aposentadoria = validar_idade_aposentadoria(idade_aposentadoria, idade_inicial, expec_vida)
@@ -3295,80 +3330,67 @@ def webhook():
     return jsonify(response), 200
 
 def validar_idade_inicial(idade_inicial):
-    if not idade_inicial:
-        return "Digite um número inteiro entre 15 e 100"
-    
-    if not idade_inicial.isdigit() or int(idade_inicial) < 15 or int(idade_inicial) > 100:
-        return "Digite um número inteiro entre 15 e 100"
-    
-    return None  # Tudo certo
+    try:
+        idade_inicial = int(idade_inicial)
+        if idade_inicial < 15 or idade_inicial > 100:
+            return "Digite um número inteiro entre 15 e 100 para a idade inicial"
+    except ValueError:
+        return "Digite um número inteiro válido para a idade inicial"
+    return None
 
-def validar_idade_aposentadoria(idade_aposentadoria, idade_inicial, expectativa_vida):
-    if not idade_aposentadoria:
-        return "Digite um número inteiro maior que a idade atual"
-    
-    if not idade_aposentadoria.isdigit() or int(idade_aposentadoria) < 15 or int(idade_aposentadoria) > 120:
-        return "Digite um número inteiro maior que a idade atual"
-    
-    if int(idade_aposentadoria) <= int(idade_inicial):
-        return "Digite um número inteiro maior que a idade atual"
-    
-    if int(idade_aposentadoria) >= int(expectativa_vida):
-        return "Digite um número inteiro maior que a expectativa de vida"
-    
-    return None  # Tudo certo
+def validar_idade_aposentadoria(idade_aposentadoria, idade_inicial, expec_vida):
+    try:
+        idade_aposentadoria = int(idade_aposentadoria)
+        if idade_aposentadoria < 15 or idade_aposentadoria > 120 or idade_aposentadoria <= idade_inicial:
+            return "Digite um número inteiro maior que a idade atual para aposentadoria"
+    except ValueError:
+        return "Digite um número inteiro válido para a idade de aposentadoria"
+    return None
 
-def validar_expectativa(expectativa_vida, idade_aposentadoria):
-    if not expectativa_vida:
-        return "Digite um número inteiro maior que a idade de aposentadoria"
-    
-    if not expectativa_vida.isdigit() or int(expectativa_vida) < 15 or int(expectativa_vida) > 150:
-        return "Digite um número inteiro maior que a idade de aposentadoria"
-    
-    if int(expectativa_vida) <= int(idade_aposentadoria):
-        return "Digite um número inteiro maior que a idade de aposentadoria"
-    
-    return None  # Tudo certo
+def validar_expectativa(expec_vida, idade_aposentadoria):
+    try:
+        expec_vida = int(expec_vida)
+        if expec_vida < 15 or expec_vida > 150 or expec_vida <= idade_aposentadoria:
+            return "Digite um número inteiro maior que a idade de aposentadoria para a expectativa de vida"
+    except ValueError:
+        return "Digite um número inteiro válido para a expectativa de vida"
+    return None
 
-def validar_reserva_financeira(reserva_financeira):
-    if not reserva_financeira:
-        return "Digite um número inteiro maior OU igual a zero"
-    
-    if not reserva_financeira.isdigit() or int(reserva_financeira) < 0:
-        return "Digite um número inteiro maior OU igual a zero"
-    
-    return None  # Tudo certo
+def validar_reserva_financeira(reserva):
+    try:
+        reserva = float(reserva)
+        if reserva < 0:
+            return "Digite um número maior ou igual a zero para a reserva financeira"
+    except ValueError:
+        return "Digite um número válido para a reserva financeira"
+    return None
 
 def validar_taxa_real(taxa_real):
-    if not taxa_real:
-        return "Digite um número MAIOR que zero com no máximo uma casa decimal"
-    
     try:
-        taxa = float(taxa_real)
-        if taxa <= 0 or len(taxa_real.split('.')[1]) > 1:
-            return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+        taxa_real = float(taxa_real)
+        if taxa_real <= 0 or len(str(taxa_real).split('.')[1]) > 1:
+            return "Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual"
     except ValueError:
-        return "Digite um número MAIOR que zero com no máximo uma casa decimal"
-    
-    return None  # Tudo certo
+        return "Digite um número válido para a taxa real anual"
+    return None
 
-def validar_beneficio_inss(beneficio_inss):
-    if not beneficio_inss:
-        return "Digite um número inteiro maior OU igual a zero"
-    
-    if not beneficio_inss.isdigit() or int(beneficio_inss) < 0:
-        return "Digite um número inteiro maior OU igual a zero"
-    
-    return None  # Tudo certo
+def validar_beneficio_inss(inss):
+    try:
+        inss = float(inss)
+        if inss < 0:
+            return "Digite um número maior ou igual a zero para o benefício esperado do INSS"
+    except ValueError:
+        return "Digite um número válido para o benefício esperado do INSS"
+    return None
 
-def validar_poupanca_mensal(poupanca_possivel):
-    if not poupanca_possivel:
-        return "Digite um número inteiro MAIOR que zero"
-    
-    if not poupanca_possivel.isdigit() or int(poupanca_possivel) <= 0:
-        return "Digite um número inteiro MAIOR que zero"
-    
-    return None  # Tudo certo
+def validar_poupanca_mensal(poupanca):
+    try:
+        poupanca = float(poupanca)
+        if poupanca < 0:
+            return "Digite um número maior ou igual a zero para a poupança mensal"
+    except ValueError:
+        return "Digite um número válido para a poupança mensal"
+    return None
 
 
 
