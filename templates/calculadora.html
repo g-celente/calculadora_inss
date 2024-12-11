@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
             <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                <li class="nav_item"><a href="#">Dúvidas e Suporte</a></li>
+                <li class="nav_item"><a href="#">Consulte nossa AI</a></li>
                 <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
                 <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
             </ul>
@@ -36,18 +36,18 @@
 
     <div class="container">
         <div class='titulo'>
-            <h1>Planeje sua Renda Futura do INSS</h1> 
-            <h4>Planeje e Calcule sua Renda Futura em 3 etapas</h4>
-            <p>Associe a sua projeção do INSS a sua carteira de investimentos <br>
-                gerando sua Renda DESEJADA e/ou Renda POSSÍVEL</p>
+            <h1>Planeje sua Renda Futura</h1> 
+            <h4>Calcule sua Renda Futura em 3 Etapas</h4>
+            <p>Calcule a projeção de Renda do INSS e associe a sua Renda DESEJADA e/ou Renda POSSÍVEL <br>
+                verificando o impacto no seu esforço de investimento.</p>
         </div>
 
         <!-- Div para a Calculadora 1 - INSS -->
         <div class="calculadora">
-            <h2 style="color: #FF4500;">Cálculadora de Previdência Privada</h2>
-            <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data">
+            <h2 style="color: #FF4500;">Calculadora de Renda da Previdência do INSS</h2>
+            <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data" id="calculadora-form">
                 <div class="custom-select" id="custom-select">
-                    <div class="selected">Selecione o sexo</div>
+                    <div class="selected">PREENCHER CAMPO SEXO</div>
                     <ul class="options">
                       <li data-value="1">Masculino</li>
                       <li data-value="0">Feminino</li>
@@ -57,29 +57,50 @@
         
                 <div class="form-group">
                     <label for="salario_bruto">Salário Bruto Atual (R$):</label>
-                    <input type="number" name="salario_bruto" id="salario_bruto" min="0" required>
+                    <input type="number" name="salario_bruto" id="salario_bruto" min="0" required value="0" placeholder="Digite um número inteiro maior OU igual a ZERO">
                 </div>
+                {% if error_salario %}
+                <div class="error-message">
+                    <strong style="color: red;">{{ error_salario }}</strong>
+                </div>
+                {% endif %}
         
                 <div class="form-group">
-                    <label for="cnis_file">Upload CNIS</label>
+                    <label for="cnis_file">Carregue CNIS</label>
                     <input type="file" name="cnis_file" accept=".pdf" id="cnis_file">
                 </div>
         
                 {% if error %}
                 <div class="error-message">
-                    <strong>{{ error }}</strong>
+                    <strong style="color: red;">{{ error }}</strong>
                 </div>
                 {% endif %}
         
                 <div class="button-class" style="display: flex;">
-                    <button type="submit" id="submit-button">Calcular Benefício INSS</button>
+                    <button type="submit" name="submit-button" value="1" id="submit-button1">Calcular Benefício INSS</button>
+                
+                    <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
+                    
                     <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
                 </div>
+                
+
             </form>
         </div>
         
+        {% if atntv %}
+            <div class="table-container">
+                <!-- Aplica a classe custom-table para estilizar a tabela -->
+                <div class="table">
+                    {{ atntv | safe }}
+                </div>
+            </div>
+        {% endif %}
+
+        
         <div class="titulo">
-            <h4>Após a geração do cálculo, nosso sistema realizará a geração de um download automático do seu relatório em PDF</h4>
+            <h4>Nosso sistema realiza um download automático do seu relatório gerado no cálculo em
+                PDF.</h4>
         </div>
     </div>
 
@@ -104,19 +125,59 @@
         </div>
     </footer>
     
-    
+    <script>
+        document.querySelectorAll('.options li').forEach(function(item) {
+            item.addEventListener('click', function() {
+                const value = item.getAttribute('data-value');
+                const displayText = item.innerText;
+                
+                // Atualiza o valor selecionado
+                document.querySelector('.selected').innerText = displayText;
+                document.querySelector('#sexo').value = value;
+            });
+        });
+
+        // Desabilitar o botão de envio após o primeiro clique
+        document.getElementById('calculadora-form').addEventListener('submit', function(event) {
+            var submitButton = document.getElementById('submit-button');
+            submitButton.disabled = true;
+            submitButton.innerText = "Aguarde...";
+        });
+    </script>
 </body>
 </html>
 
-<script>
-    document.querySelectorAll('.options li').forEach(function(item) {
-        item.addEventListener('click', function() {
-            const value = item.getAttribute('data-value');
-            const displayText = item.innerText;
-            
-            // Atualiza o valor selecionado
-            document.querySelector('.selected').innerText = displayText;
-            document.querySelector('#sexo').value = value;
-        });
-    });
-</script>
+<style>
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-family: Arial, sans-serif;
+    }
+  
+    .custom-table th, .custom-table td {
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+  
+    .custom-table th {
+        background-color: #4CAF50;
+        color: white;
+    }
+  
+    .custom-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+  
+    .custom-table tr:hover {
+        background-color: #ddd;
+    }
+  
+    .table-container {
+        overflow-x: auto;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+  </style>
+  

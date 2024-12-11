@@ -175,6 +175,7 @@ button {
     font-weight: bold;
     border-radius: 5px;
     transition: background-color 0.3s, transform 0.2s;
+    margin-top: 10px;
 }
 
 .btnPadrao {
@@ -483,3 +484,75 @@ button:hover {
     cursor: pointer;
   }
   
+
+  /* Contêiner da Tabela */
+.table-container {
+    width: 100%;
+    overflow-x: auto; /* Permite rolar horizontalmente em telas menores */
+    margin: auto;
+    justify-content: center;
+}
+
+/* Estilo da Tabela */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Cabeçalho da Tabela */
+.custom-table thead {
+    background-color: #2c3e50;
+    color: white;
+}
+
+.custom-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+}
+
+/* Corpo da Tabela */
+.custom-table tbody {
+    background-color: #f9f9f9;
+}
+
+.custom-table td {
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Listras nas Linhas */
+.custom-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Hover nas Linhas */
+.custom-table tr:hover {
+    background-color: #e3e3e3;
+}
+
+/* Bordas nas Células */
+.custom-table th, .custom-table td {
+    border: 1px solid #ddd;
+}
+
+/* Estilo do Índice (primeira coluna) */
+.custom-table td:first-child, .custom-table th:first-child {
+    text-align: center;
+    width: 50px; /* Ajuste a largura da primeira coluna */
+}
+
+/* Ajustes em Telas Menores */
+@media (max-width: 768px) {
+    .custom-table {
+        font-size: 12px;
+    }
+    .custom-table th, .custom-table td {
+        padding: 8px;
+    }
+}

@@ -14,7 +14,7 @@
         }
 
         /* Estilo do iframe para o PDF */
-        .center-container iframe {
+        .center-container img {
             width: 100%;  /* Faz o iframe ocupar 100% da largura da tela */
             height: 100vh; /* Faz o iframe ocupar a altura total da janela */
             border: none;  /* Remove as bordas do iframe */
@@ -49,7 +49,7 @@
                 </i>
                 <ul id="nav_list">
                     <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                    <li class="nav_item"><a href="#">Dúvidas e Suporte</a></li>
+                    <li class="nav_item"><a href="#">Consulte nossa AI</a></li>
                     <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
                     <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
                 </ul>
@@ -57,10 +57,10 @@
         </header>
         <section>
             <div class="container">
-                {% if pdf_base64 %}
+                {% if graph_base64 %}
                     <div class="center-container">
                         <!-- Aumenta o tamanho do iframe e ajusta para tela cheia -->
-                        <iframe src="data:application/pdf;base64,{{ pdf_base64 }}" alt="Gráfico Renda Desejada"></iframe>
+                        <img src="data:image/png;base64,{{ graph_base64 }}" alt="Gráfico Renda Desejada"></img>
                     </div>
                 {% else %}
                     <div class="center-container">

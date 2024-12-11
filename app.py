@@ -79,6 +79,8 @@ def token_required(f):
 
 def criar_relat_pdf(SX,SLBRT, cnis_path):
 
+    SX = int(SX)
+
     import os
     # Caminho para o arquivo Excel
     path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'series.xlsx')
@@ -407,21 +409,30 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #Ajusta carencia em funcao do sexo,idade e ingresso no inss  p aposent por idade
     #SX = 1  # Substitua pelo sexo real (1 para masculino, 0 para feminino)
-    DatRef = pd.to_datetime('13/11/2019', format='%d/%m/%Y') #reforma
-    DatIng = IDADE['comp'].min() #data de ingresso provisoria (ajustar por data na linha Seq1 do cnis...)
-    #print(DatIng)
+    DatRef = pd.to_datetime('13/11/2019', format='%d/%m/%Y')  # Data da reforma
+    DatIng = IDADE['comp'].min()  # Data de ingresso provisória
+
+    print(DatRef)
+    print(DatIng)
+    print(SX)
 
     if SX == 1 and DatIng < DatRef:
+        print('CHEGUEI AQUI PRIMEIRO IF')
         CARid = 180
         idade_final = 65
-
-    if SX == 1 and DatIng > DatRef:
+    elif SX == 1 and DatIng >= DatRef: 
+        print('CHEGUEI AQUI SEGUNDO IF') # Use >= para cobrir todos os casos
         CARid = 240
         idade_final = 65
-
-    if SX == 0:
+    elif SX == 0:
+        print('CHEGUEI AQUI TERCEIRO IF')
         CARid = 180
         idade_final = 62
+    else:
+        print('NADA AVE')
+        CARid = 180
+        idade_final = 65
+
 
     # Definir a data de nascimento
     nasc_str = NASCI
@@ -1952,12 +1963,8 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         # Configurar o tamanho da página
         doc = SimpleDocTemplate(filename, pagesize=letter)
 
-        logo_path = f'static/assets/GRP branding.LOGOMARCA.png'
-        logo = Image(logo_path, width=120, height=150)
-
         # Adicionar o título ao documento usando o estilo de parágrafo
-        styles = getSampleStyleSheet() # Alinhe a logo ao centro
-
+        styles = getSampleStyleSheet()
         title = f"Análise do Extrato da Previdencia (CNIS)"
         title_paragraph = Paragraph(title, styles['Title'])
 
@@ -2110,7 +2117,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         table.setStyle(style)
 
         # Adicionar os elementos ao documento
-        content = [logo, Spacer(1, 0.1 * inch),line,title_paragraph, line, nome,Spacer(1, 0.1 * inch),line,\
+        content = [line,title_paragraph, line, nome,Spacer(1, 0.1 * inch),line,\
                    cadastro,nit,cpf,nascimento,mae,ingresso,extrato,analise,idade,contribuicao,nrosal,\
                    Spacer(1, 0.1 * inch),\
                    line,title_2,line,additional_3,Spacer(1, 0.1 * inch),table,Spacer(1, 0.1 * inch),nt_i,Spacer(1, 0.1 * inch),observacao, additional_paragraph_4,additional_5,\
@@ -2444,9 +2451,10 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     pdf_files = [filiado_pdf, vinculos_pdf, indicadores_pdf]
     pdf = merge_pdfs(pdf_files)
+    atntv_html = ATNTV.to_html(classes='table table-striped')
+    print(atntv_html)
 
-    # No retorno de `gerar_relatorio`, você agora pode retornar diretamente `pdf`:
-    return pdf
+    return pdf, atntv_html
 
 
 def verifica_cnis(cnis_path):
@@ -2691,27 +2699,99 @@ def logout():
 def criar_grafico_rendaDesejada():
     
     if request.method == 'POST':
-        idade_inicial = int(request.form['id_ini'])
-        idade_aposentadoria = int(request.form['id_apos'])
-        expec_vida = int(request.form['id_exp'])
-        reserva = float(request.form['id_reser'])
-        inss = float(request.form['id_inss'])
-        renda_desejada = float(request.form['id_dese'])
-        ret_invest_anual = float(request.form['id_tx']) / 100
+        # Recebendo os campos do formulário
+        idade_inicial = request.form['id_ini']
+        idade_aposentadoria = request.form['id_apos']
+        expec_vida = request.form['id_exp']
+        reserva = request.form['id_reser']
+        inss = request.form['id_inss']
+        renda_desejada = request.form['id_dese']
+        taxa_real_ano2 = request.form['id_tx']
+
+        if not taxa_real_ano2:
+            return render_template('desejada.html', error_taxa="Por favor, insira um valor na taxa real")
+
+        taxa_real_ano = int(taxa_real_ano2)
+
+        # Função para validar se o valor é um número inteiro
+        def validar_inteiro(valor):
+            try:
+                return int(valor)
+            except ValueError:
+                return None
+
+        # Função para validar se o valor é um número float com uma casa decimal
+        def validar_taxa_real(taxa_real):
+            if not taxa_real:
+                return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+            
+            try:
+                taxa = float(taxa_real)
+                if taxa <= 0 or len(taxa_real.split('.')[1]) > 1:
+                    return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+            except ValueError:
+                return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+            
+            return None  # Tudo certo
+
+
+        # Validações para o campo IDADE INICIAL
+        idade_inicial = validar_inteiro(idade_inicial)
+        if idade_inicial is None or idade_inicial < 15 or idade_inicial > 100:
+            return render_template("desejada.html", error_idade="Digite um número inteiro entre 15 e 100 para a idade inicial")
+
+        # Validações para o campo IDADE APOSENTADORIA
+        idade_aposentadoria = validar_inteiro(idade_aposentadoria)
+        if idade_aposentadoria is None or idade_aposentadoria < 15 or idade_aposentadoria > 120 or idade_aposentadoria <= idade_inicial:
+            return render_template("desejada.html",error_aposentadoria="Digite um número inteiro maior que a idade atual para aposentadoria")
+
+        # Validações para o campo EXPECTATIVA DE VIDA
+        expec_vida = validar_inteiro(expec_vida)
+        if expec_vida is None or expec_vida < 15 or expec_vida > 150 or expec_vida <= idade_aposentadoria:
+            return render_template("desejada.html",error_vida="Digite um número inteiro maior que a idade de aposentadoria para a expectativa de vida")
+
+        # Validações para o campo RESERVA FINANCEIRA
+        reserva = validar_inteiro(reserva)
+        if reserva is None or reserva < 0:
+            return render_template('desejada.html', error_reserva = "Digite um número inteiro maior ou igual a zero para a reserva financeira")
+
+        # Validações para o campo TAXA REAL ANUAL
+        taxa_real_ano = validar_taxa_real(taxa_real_ano)
+        if taxa_real_ano is None or taxa_real_ano <= 0:
+            return render_template('desejada.html', error_taxa="Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual")
+
+        # Validações para o campo BENEFÍCIO ESPERADO INSS
+        inss = validar_inteiro(inss)
+        if inss is None or inss < 0:
+            return render_template('desejada.html', error_inss="Digite um número inteiro maior ou igual a zero para o benefício esperado do INSS")
+
+        # Validações para o campo RENDA MENSAL DESEJADA
+        renda_desejada = validar_inteiro(renda_desejada)
+        if renda_desejada is None or renda_desejada <= 0:
+            return render_template('desejada.html', error_desejada= "Digite um número inteiro maior que zero para a renda mensal desejada")
+
+        # Conversões e cálculos após validações
+        ret_invest_anual = float(taxa_real_ano) / 100
         ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
 
-        complemento = renda_desejada - inss
+        # Construir a coluna 'idade'
         idade = np.arange(idade_inicial, expec_vida + 1)
+
+        # Construir a coluna 'Salario'
         salario = np.where(idade < idade_aposentadoria, 0, renda_desejada)
+
+        complemento = renda_desejada - inss
+
+        # Construir a coluna 'Complemento'
         complemento_col = np.where(idade < idade_aposentadoria, 0, complemento)
 
-        # Função para calcular o valor futuro (FV)
+        # Função que calcula o valor futuro (FV) equivalente à fórmula do Excel
         def FV(rate, nper, pmt):
             if rate == 0:
                 return pmt * nper
             return pmt * ((1 + rate) ** nper - 1) / rate
 
-        # Função para calcular 'Poupanca' e 'Acumula'
+        # Função para calcular a coluna 'Poupanca'
         def calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal):
             poupanca = np.zeros_like(idade, dtype=float)
             for i in range(len(idade)):
@@ -2721,6 +2801,7 @@ def criar_grafico_rendaDesejada():
                     poupanca[i] = -FV(ret_invest_mensal, 12, complemento_col[i])
             return poupanca
 
+        # Função para calcular a coluna 'Acumula'
         def calcular_acumula(poupanca, reserva, ret_invest_anual):
             acumula = np.zeros_like(poupanca, dtype=float)
             acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
@@ -2734,15 +2815,18 @@ def criar_grafico_rendaDesejada():
             acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
             return abs(acumula[-1])
 
-        # Otimização para encontrar o valor de D5
-        from scipy.optimize import fminbound
-        D5_otimo = fminbound(func_objetivo, 0.0, 1000000)
+        # Intervalo de busca para D5
+        d5_min = 0.0
+        d5_max = 1000000
 
-        # Calcular as colunas finais
+        # Encontrar o valor ótimo de D5
+        D5_otimo = fminbound(func_objetivo, d5_min, d5_max)
+
+        # Calcular as colunas finais usando o valor ótimo de D5
         poupanca_final = calcular_poupanca(D5_otimo, idade, salario, complemento_col, ret_invest_mensal)
         acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
 
-        # DataFrame para o gráfico
+        # Criar o DataFrame e formatar as colunas com duas casas decimais
         RDB = pd.DataFrame({
             'Idade': idade,
             'Salario': salario,
@@ -2750,59 +2834,177 @@ def criar_grafico_rendaDesejada():
             'Poupanca': poupanca_final.round(2),
             'Acumula': acumula_final.round(2)
         })
-
+        
         # Configurações do gráfico
-        fig, ax1 = plt.subplots(figsize=(13, 7))
-        ax1.set_xlim([idade_inicial, expec_vida])
-        ax1.set_xlabel('Idade', fontweight='bold', fontsize=15)
-        ax1.set_ylabel('Renda (R$)', fontweight='bold', fontsize=15)
-        ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], [D5_otimo] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 'r.:', linewidth=2, markersize=8, label='Poupança')
-        ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], [renda_desejada] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 'g--', linewidth=5, label='Renda')
+        fig, ax1 = plt.subplots(figsize=(13, 7))  # Ajustar o tamanho da figura
 
+        # Eixo X
+        ax1.set_xlim([idade_inicial, expec_vida])
+        ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
+        ax1.set_xlabel('Idade', fontweight='bold',fontsize=15)
+
+        # Eixo Y primário
+        #max(renda_desejada, D5_otimo) ajuste para qdo poupanca for maior renda desejada
+        ax1.set_ylim([0, max(renda_desejada, D5_otimo) + 1000])
+        ax1.set_yticks(np.arange(0, max(renda_desejada, D5_otimo) + 2000, 1000))
+        ax1.set_ylabel('Renda (R$)', fontweight='bold',fontsize=15)
+        ax1.set_yticklabels([f'R${x},00' for x in np.arange(0, max(renda_desejada, D5_otimo) + 2000, 1000)])
+
+        # Plotando a curva de Poupança (pontilhada vermelha)
+        ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
+                [D5_otimo] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
+                'r.:', linewidth=2, markersize=8, label='Poupança')
+
+        # Plotando a curva de Renda (tracejada verde)
+        ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
+                [renda_desejada] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
+                'g--', linewidth=5, label='Renda')
+
+        # Eixo Y secundário
         ax2 = ax1.twinx()
         ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
-        ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
+        ax2.set_ylabel('Reserva Acumulada Milhares (R$)', fontweight='bold',fontsize=15, labelpad=5)  # Ajuste do labelpad
 
-        img = mpimg.imread('static/assets/imagem_fundo_grafico.jpeg')  # Substitua pelo caminho da sua imagem
-        ax1.imshow(img, aspect='auto', extent=[idade_inicial, expec_vida, 0, RDB['Acumula'].max() * 1.1], alpha=0.2)
+        # Adicionar linha vertical em grey saindo de 'idade_aposentadoria - 1' até RDB.Acumula.max()
+        max_acumula = RDB['Acumula'].max() / 1000  # Convertendo para milhares
+        ax2.axvline(x=idade_aposentadoria - 1, color='grey', linestyle='--')
+        ax2.plot([idade_aposentadoria - 1, idade_aposentadoria - 1], [0, max_acumula], color='grey', linestyle='--')
 
-        # Título e legendas
-        fig.suptitle('Condições para Renda Desejada', fontweight='bold', fontsize=20)
-        ax1.legend(loc='upper left')
-        ax2.legend(loc='upper right')
+        # Formatar os rótulos do eixo Y secundário
+        ticks = np.linspace(0, max_acumula, num=6)
+        ax2.set_yticks(ticks)
+        ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
 
-        # Salvar o gráfico em PDF diretamente no buffer
-        pdf_buffer = BytesIO()
-        plt.savefig(pdf_buffer, format='pdf')
-        pdf_buffer.seek(0)
+        # Título
+        plt.title('Condições para Renda Desejada', fontweight='bold',fontsize=20)
 
-        # Retornar a resposta
-        return send_file(pdf_buffer, as_attachment=True, download_name='GraficODesejada.pdf')
+        # Legendas
+        handles1, labels1 = ax1.get_legend_handles_labels()
+        handles2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False, fontsize=15)
+
+        # Adicionar caixa de texto com informações adicionais ao lado direito do gráfico
+        info_text = (
+            f"{'RESUMO':^30}\n\n"  # Inserir 'RESUMO' em negrito e centralizado
+            f"Aposentadoria aos {idade_aposentadoria} anos\n\n"
+            f"Reserva Atual\n"
+            f"R$ {reserva:,.0f}\n\n"
+            f"Reserva aos {idade_aposentadoria} anos\n"
+            f"R$ {RDB['Acumula'].max():,.0f}\n\n"
+            f"Poupança até {idade_aposentadoria} anos (P)\n"
+            f"R$ {D5_otimo:,.0f}/mês\n\n"
+            f"Renda INSS (1)\n"
+            f"R$ {inss:,.0f}\n\n"
+            f"Renda Investimento (2)\n"
+            f"R$ {RDB['Complemento'].max():,.0f}\n\n"
+            f"Renda DESEJADA (1)+(2)\n"
+            f"R$ {renda_desejada:,.0f}/mês\n"
+        )
+        plt.gcf().text(1.17, 0.5, info_text, fontsize=15, bbox=dict(facecolor='white', alpha=0.5), transform=ax1.transAxes, verticalalignment='center')
+
+        # Adicionar anotação para a linha verde
+        ax1.annotate(
+            '(1)+(2)',
+            xy=(idade_aposentadoria, renda_desejada),
+            xytext=(idade_aposentadoria + 10, renda_desejada + 200),
+            fontsize=20,
+            ha='center',
+            fontweight='bold'
+        )
+
+        # Adicionar anotação para a curva vermelha
+        ax1.annotate(
+            'P',
+            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, D5_otimo),
+            xytext=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, D5_otimo + 100),
+            #xytext=(idade_aposentadoria - 15, D5_otimo + 100),  # Ajuste aqui para mudar a posição do texto
+            fontsize=20,
+            ha='center',
+            fontweight='bold',
+            color='red'
+        )
+
+        # Adicionar anotação para a curva azul
+        ax2.annotate(
+            '(2)\n',
+            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, max_acumula),
+            xytext=(idade_aposentadoria + (expec_vida - idade_aposentadoria) / 2, max_acumula / 2),  # Ajuste aqui para mudar a posição do texto
+            fontsize=20,
+            ha='center',
+            fontweight='bold',
+            color='black'
+        )
+
+        # Adicionar nota de rodapé
+        fig.text(0.0, -0.05, 'Este gráfico é apenas uma simulação e não deve ser usado como único instrumento para decisões financeiras.\n'
+                            'Consulte um especialista antes de tomar qualquer decisão financeira.', 
+                fontsize=15)
+
+        # Ajustando layout
+        plt.tight_layout(rect=[0, 0, 0.95, 1])
+
+            # Salvar o gráfico em PDF diretamente no buffer
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+
+        # Enviar o gráfico codificado para o frontend
+        return render_template('resultado.html', graph_base64=graph_base64)
+
 
 #funcao cria grafico renda possivel
 @app.route('/grafico_renda_possivel', methods=['POST', 'GET'])
 @token_required
 def criar_grafico_rendaPossivel():
     if request.method == 'POST':
-        idade_inicial = int(request.form['id_ini'])
-        idade_aposentadoria = int(request.form['id_apos'])
-        expec_vida = int(request.form['id_exp'])
-        reserva = float(request.form['id_reser'])
-        inss = float(request.form['id_inss'])
-        poupanca_possivel = float(request.form['id_poss'])
-        ret_invest_anual = float(request.form['id_tx']) / 100
-        ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
+        idade_inicial = request.form['id_ini']
+        idade_aposentadoria = request.form['id_apos']
+        expec_vida = request.form['id_exp']
+        reserva = request.form['id_reser']
+        inss = request.form['id_inss']
+        poupanca_possivel = request.form['id_poss']
+        ret_invest_anual = request.form['id_tx']
+
+        # Validações
+        erro_idade_inicial = validar_idade_inicial(idade_inicial)
+        erro_idade_aposentadoria = validar_idade_aposentadoria(idade_aposentadoria, idade_inicial, expec_vida)
+        erro_expectativa = validar_expectativa(expec_vida, idade_aposentadoria)
+        erro_reserva = validar_reserva_financeira(reserva)
+        erro_taxa = validar_taxa_real(ret_invest_anual)
+        erro_beneficio = validar_beneficio_inss(inss)
+        erro_poupanca = validar_poupanca_mensal(poupanca_possivel)
+
+        if erro_idade_inicial or erro_idade_aposentadoria or erro_expectativa or erro_reserva or erro_taxa or erro_beneficio or erro_poupanca:
+            return render_template('formulario.html', 
+                                   erro_idade_inicial=erro_idade_inicial, 
+                                   erro_idade_aposentadoria=erro_idade_aposentadoria, 
+                                   erro_expectativa=erro_expectativa, 
+                                   erro_reserva=erro_reserva, 
+                                   erro_taxa=erro_taxa, 
+                                   erro_beneficio=erro_beneficio, 
+                                   erro_poupanca=erro_poupanca)
+
+        # Convertendo as entradas válidas para o tipo correto
+        idade_inicial = int(idade_inicial)
+        idade_aposentadoria = int(idade_aposentadoria)
+        expec_vida = int(expec_vida)
+        reserva = float(reserva)
+        inss = float(inss)
+        poupanca_possivel = float(poupanca_possivel)
+        ret_invest_anual = float(ret_invest_anual) / 100
+        ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1 
 
         # Construir a coluna 'idade'
         idade = np.arange(idade_inicial, expec_vida + 1)
 
-        # Função para calcular o valor futuro (FV)
+        # Função que calcula o valor futuro (FV) equivalente à fórmula do Excel
         def FV(rate, nper, pmt):
             if rate == 0:
                 return pmt * nper
             return pmt * ((1 + rate) ** nper - 1) / rate
 
-        # Funções para calcular 'Poupanca' e 'Acumula'
+        # Função para calcular a coluna 'Poupanca'
         def calcular_poupanca(D3, idade, ret_invest_mensal):
             poupanca = np.zeros_like(idade, dtype=float)
             for i in range(len(idade)):
@@ -2812,6 +3014,7 @@ def criar_grafico_rendaPossivel():
                     poupanca[i] = -FV(ret_invest_mensal, 12, D3)
             return poupanca
 
+        # Função para calcular a coluna 'Acumula'
         def calcular_acumula(poupanca, reserva, ret_invest_anual):
             acumula = np.zeros_like(poupanca, dtype=float)
             acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
@@ -2819,21 +3022,25 @@ def criar_grafico_rendaPossivel():
                 acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
             return acumula
 
-        # Função de objetivo para otimização
+        # Função objetivo para otimização
         def func_objetivo(D3):
             poupanca = calcular_poupanca(D3, idade, ret_invest_mensal)
             acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
             return abs(acumula[-1])
 
-        # Determinar o valor ótimo de D3 usando a função objetivo
-        D3_otimo = fminbound(func_objetivo, 0, 1000000)
+        # Intervalo de busca para D3
+        d3_min = 0.0
+        d3_max = 1000000
 
-        # Calcular as colunas finais com o valor ótimo de D3
+        # Encontrar o valor ótimo de D3
+        D3_otimo = fminbound(func_objetivo, d3_min, d3_max)
+
+        # Calcular as colunas finais usando o valor ótimo de D3
         salario_final = np.where(idade < idade_aposentadoria, 0, inss + D3_otimo)
         poupanca_final = calcular_poupanca(D3_otimo, idade, ret_invest_mensal)
         acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
 
-        # Criar o DataFrame e configurar o gráfico
+        # Criar o DataFrame e formatar as colunas com duas casas decimais
         RDB = pd.DataFrame({
             'Idade': idade,
             'Salario': salario_final.round(2),
@@ -2843,40 +3050,125 @@ def criar_grafico_rendaPossivel():
         })
 
         # Configurações do gráfico
-        fig, ax1 = plt.subplots(figsize=(13, 7))
+        fig, ax1 = plt.subplots(figsize=(13, 7))  # Ajustar o tamanho da figura
+
+        # Eixo X
         ax1.set_xlim([idade_inicial, expec_vida])
         ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
-        ax1.set_xlabel('Idade', fontweight='bold', fontsize=15)
-        ax1.set_ylabel('Renda (R$)', fontweight='bold', fontsize=15)
+        ax1.set_xlabel('Idade', fontweight='bold',fontsize=15)
 
-        # Plotando a curva de Poupança e a curva de Renda
+        # Eixo Y primário
+        ax1.set_ylim([0, RDB['Salario'].max() + 2000])
+        ax1.set_yticks(np.arange(0, RDB['Salario'].max() + 2000, 1000))
+        ax1.set_ylabel('Renda (R$)', fontweight='bold',fontsize=15)
+        ax1.set_yticklabels([f'R${int(x)}' for x in np.arange(0, RDB['Salario'].max() + 2000, 1000)])
+        #ax1.set_yticklabels([f'R${x},00' for x in np.arange(0, renda_desejada + 2000, 1000)])
+
+        #ticks = np.linspace(0, max_acumula, num=6)
+        #x2.set_yticks(ticks)
+        #ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
+
+        # Plotando a curva de Poupança (pontilhada vermelha)
         ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
                 [poupanca_possivel] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
                 'r.:', linewidth=2, markersize=8, label='Poupança')
+
+        # Plotando a curva de Renda (tracejada verde)
         ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
                 [RDB['Salario'].max()] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
                 'g--', linewidth=5, label='Renda')
 
-        # Configurações do eixo Y secundário
+        # Eixo Y secundário
         ax2 = ax1.twinx()
         ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
-        ax2.set_ylabel('Reserva Acumulada (milhares de R$)', fontweight='bold', fontsize=15)
+        ax2.set_ylabel('Reserva Acumulada Milhares (R$)', fontweight='bold',fontsize=15, labelpad=5)  # Ajuste do labelpad
 
-        # Adicionando a imagem no gráfico
-        img = mpimg.imread('static/assets/imagem_fundo_grafico.jpeg')  # Substitua pelo caminho da sua imagem
-        ax1.imshow(img, aspect='auto', extent=[idade_inicial, expec_vida, 0, RDB['Acumula'].max() * 1.1], alpha=0.2)
+        # Adicionar linha vertical em grey saindo de 'idade_aposentadoria - 1' até RDB.Acumula.max()
+        max_acumula = RDB['Acumula'].max() / 1000  # Convertendo para milhares
+        ax2.axvline(x=idade_aposentadoria - 1, color='grey', linestyle='--')
+        ax2.plot([idade_aposentadoria - 1, idade_aposentadoria - 1], [0, max_acumula], color='grey', linestyle='--')
 
-        # Legendas e título
-        fig.suptitle('Condições para Renda Possível - Planejamento de Aposentadoria', fontweight='bold', fontsize=20)
-        ax1.legend(loc='upper left')
-        ax2.legend(loc='upper right')
+        # Formatar os rótulos do eixo Y secundário
+        ticks = np.linspace(0, max_acumula, num=6)
+        ax2.set_yticks(ticks)
+        ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
 
-        # Salvando o gráfico em memória no formato base64
-        pdf_buffer = BytesIO()
-        plt.savefig(pdf_buffer, format='pdf')
-        pdf_buffer.seek(0)
-        # Enviar o PDF codificado para o frontend
-        return send_file(pdf_buffer, as_attachment=True, download_name='Gráfigo Renda Possível.pdf')
+        # Título
+        plt.title('Condições para Renda Possivel', fontweight='bold',fontsize=20)
+
+        # Legendas
+        handles1, labels1 = ax1.get_legend_handles_labels()
+        handles2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False, fontsize=15)
+
+        # Adicionar caixa de texto com informações adicionais ao lado direito do gráfico
+        info_text = (
+            f"{'RESUMO':^30}\n\n"  # Inserir 'RESUMO' em negrito e centralizado
+            f"Aposentadoria aos {idade_aposentadoria} anos\n\n"
+            f"Reserva Atual\n"
+            f"R$ {reserva:,.0f}\n\n"
+            f"Reserva aos {idade_aposentadoria} anos\n"
+            f"R$ {RDB['Acumula'].max():,.0f}\n\n"
+            f"Poupança ate {idade_aposentadoria} anos (P)\n"
+            f"R$ {poupanca_possivel:,.0f}/mes\n\n"
+            f"Renda INSS (1)\n"
+            f"R$ {inss:,.0f}\n\n"
+            f"Renda Investimento (2)\n"
+            f"R$ {RDB['Complemento'].max():,.0f}\n\n"
+            f"Renda POSSIVEL (1)+(2)\n"
+            f"R$ {RDB['Salario'].max():,.0f}/mes\n"
+        )
+        plt.gcf().text(1.17, 0.5, info_text, fontsize=15, bbox=dict(facecolor='white', alpha=0.5), transform=ax1.transAxes, verticalalignment='center')
+        #plt.gcf().text(1.18, 0.5
+
+        # Adicionar anotação para a linha verde
+        ax1.annotate(
+            '(1)+(2)',
+            xy=(idade_aposentadoria, RDB['Salario'].max()),
+            xytext=(idade_aposentadoria + 10, RDB['Salario'].max() +200),
+            fontsize=20,
+            ha='center',
+            fontweight='bold'
+        )
+        #arrowprops=dict(facecolor='red', shrink=0.05)
+
+        # Adicionar anotação para a curva vermelha
+        ax1.annotate(
+            'P',
+            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, poupanca_possivel),
+            xytext=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, poupanca_possivel + 100),  # Ajuste aqui para mudar a posição do texto
+            fontsize=20,
+            ha='center',
+            fontweight='bold',
+            color='red'
+        )
+
+        # Adicionar anotação para a curva azul
+        ax2.annotate(
+            '(2)\n',
+            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, max_acumula),
+            xytext=(idade_aposentadoria + (expec_vida-idade_aposentadoria)/2, max_acumula/ 2),  # Ajuste aqui para mudar a posição do texto
+            fontsize=20,
+            ha='center',
+            fontweight='bold',
+            color='black'
+        )
+
+        # Adicionar nota de rodapé
+        fig.text(0.0,-0.05, 'Este gráfico é apenas uma simulação e não deve ser usado como único instrumento para decisões financeiras.\n'
+                            'Consulte um especialista antes de tomar qualquer decisão financeira.', 
+                fontsize=15)
+
+        # Ajustando layout
+        plt.tight_layout(rect=[0, 0, 0.95, 1])
+
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+
+        # Enviar o gráfico codificado para o frontend
+        return render_template('resultado.html', graph_base64=graph_base64)
     
     return render_template('resultado.html')
 
@@ -2885,7 +3177,6 @@ def criar_grafico_rendaPossivel():
 @token_required
 def gerar_relatorio():
     try:
-        setup_locale()
         cnis_file = request.files['cnis_file']
         # Construa o caminho absoluto para o arquivo CNIS.pdf
         cnis_buffer = BytesIO()
@@ -2893,32 +3184,55 @@ def gerar_relatorio():
         cnis_buffer.seek(0)
         n_clicks3 = 0
 
-        sx = int(request.form['sexo'])
-        slbr = int(request.form['salario_bruto'])
+        sx = request.form['sexo']
+        salario_bruto = request.form['salario_bruto']
+        button = request.form['submit-button']
+
+        print(sx)
+        print(salario_bruto)
+
+        # Verificações para o campo salario_bruto
+        if not salario_bruto.strip():  # Verifica se o campo está vazio
+            error_salario = 'Digite um número inteiro maior ou igual a zero.'
+            return render_template('calculadora.html', error_salario=error_salario)
+
+        if not salario_bruto.isdigit():  # Verifica se contém apenas números inteiros positivos
+            error_salario = 'Digite um número inteiro maior ou igual a zero.'
+            return render_template('calculadora.html', error_salario=error_salario)
+
+        slbr = int(salario_bruto)
+
+        if slbr < 0:  # Verifica se o número é negativo
+            error_salario = 'Digite um número inteiro maior ou igual a zero.'
+            return render_template('calculadora.html', error_salario=error_salario)
 
         if n_clicks3 >= 0:
             # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
             if cnis_buffer.getbuffer().nbytes == 0:
-                return '', 'Para o Calculo do Benefício Selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo !'
-            
-            if verifica_cnis(cnis_buffer) != 3:
-                return '', 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
-            
-            if sx is None:
-                return None, 'Preencher sexo e clique novamente em "Calcular Beneficio INSS" e aguarde...!'
-            
-            if slbr is None or slbr < 0:
-                return None, 'Preencha Salário Bruto com um valor inteiro, maior ou igual a zero e sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...). Clique novamente em "Calculo Beneficio INSS" e aguarde...!'
-            
-            pdf = criar_relat_pdf(sx, slbr, cnis_buffer)
+                error = 'Para o Cálculo do Benefício, selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo!'
+                return render_template('calculadora.html', error=error)
 
-            response = send_file(pdf, as_attachment=True, download_name='RelatInss.pdf')
-            return response
+            if verifica_cnis(cnis_buffer) != 3:
+                error = 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
+                return render_template('calculadora.html', error=error)
+
+            if sx is None:
+                error = 'Preencher sexo e clique novamente em "Calcular Benefício INSS" e aguarde...!'
+                return render_template('calculadora.html', error=error)
+
+            pdf, atntv_html = criar_relat_pdf(sx, slbr, cnis_buffer)
+
+            if button == '2':
+                # Se for para baixar o PDF, retorna o arquivo
+                return send_file(pdf, as_attachment=True, download_name='RelatInss.pdf')
+                        
+            # Passa a tabela HTML para o template `calculadora.html`
+            return render_template('calculadora.html', atntv=atntv_html, pdf=pdf)
+
     except Exception as e:
         app.logger.error(f"Error occurred: {str(e)}")
-        error = f'Ocorreu um erro ao tentar gerar seu pdf, por favor, verifique seu CNIS'
+        error = 'Ocorreu um erro ao tentar gerar seu PDF, por favor, verifique seu CNIS.'
         return render_template('calculadora.html', error=error)
-
 
 
 def send_email(name, email, password):
@@ -2979,6 +3293,83 @@ def webhook():
     response = register_via_webhook(customer_name, customer_email, password)
     
     return jsonify(response), 200
+
+def validar_idade_inicial(idade_inicial):
+    if not idade_inicial:
+        return "Digite um número inteiro entre 15 e 100"
+    
+    if not idade_inicial.isdigit() or int(idade_inicial) < 15 or int(idade_inicial) > 100:
+        return "Digite um número inteiro entre 15 e 100"
+    
+    return None  # Tudo certo
+
+def validar_idade_aposentadoria(idade_aposentadoria, idade_inicial, expectativa_vida):
+    if not idade_aposentadoria:
+        return "Digite um número inteiro maior que a idade atual"
+    
+    if not idade_aposentadoria.isdigit() or int(idade_aposentadoria) < 15 or int(idade_aposentadoria) > 120:
+        return "Digite um número inteiro maior que a idade atual"
+    
+    if int(idade_aposentadoria) <= int(idade_inicial):
+        return "Digite um número inteiro maior que a idade atual"
+    
+    if int(idade_aposentadoria) >= int(expectativa_vida):
+        return "Digite um número inteiro maior que a expectativa de vida"
+    
+    return None  # Tudo certo
+
+def validar_expectativa(expectativa_vida, idade_aposentadoria):
+    if not expectativa_vida:
+        return "Digite um número inteiro maior que a idade de aposentadoria"
+    
+    if not expectativa_vida.isdigit() or int(expectativa_vida) < 15 or int(expectativa_vida) > 150:
+        return "Digite um número inteiro maior que a idade de aposentadoria"
+    
+    if int(expectativa_vida) <= int(idade_aposentadoria):
+        return "Digite um número inteiro maior que a idade de aposentadoria"
+    
+    return None  # Tudo certo
+
+def validar_reserva_financeira(reserva_financeira):
+    if not reserva_financeira:
+        return "Digite um número inteiro maior OU igual a zero"
+    
+    if not reserva_financeira.isdigit() or int(reserva_financeira) < 0:
+        return "Digite um número inteiro maior OU igual a zero"
+    
+    return None  # Tudo certo
+
+def validar_taxa_real(taxa_real):
+    if not taxa_real:
+        return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+    
+    try:
+        taxa = float(taxa_real)
+        if taxa <= 0 or len(taxa_real.split('.')[1]) > 1:
+            return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+    except ValueError:
+        return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+    
+    return None  # Tudo certo
+
+def validar_beneficio_inss(beneficio_inss):
+    if not beneficio_inss:
+        return "Digite um número inteiro maior OU igual a zero"
+    
+    if not beneficio_inss.isdigit() or int(beneficio_inss) < 0:
+        return "Digite um número inteiro maior OU igual a zero"
+    
+    return None  # Tudo certo
+
+def validar_poupanca_mensal(poupanca_possivel):
+    if not poupanca_possivel:
+        return "Digite um número inteiro MAIOR que zero"
+    
+    if not poupanca_possivel.isdigit() or int(poupanca_possivel) <= 0:
+        return "Digite um número inteiro MAIOR que zero"
+    
+    return None  # Tudo certo
+
 
 
 if __name__ == '__main__':

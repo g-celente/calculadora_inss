@@ -16,7 +16,7 @@
             </i>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                <li class="nav_item"><a href="#">Dúvidas e Suporte</a></li>
+                <li class="nav_item"><a href="#">Consulte nossa AI</a></li>
                 <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
                 <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
             </ul>
@@ -32,15 +32,15 @@
                 
                 <div id="cta_container">
                     <div id="cta_botao">
-                        <a href="{{ url_for('dashboard') }}" class="button"><span>PREVIDÊNCIA PRIVADA</span> • Calculadora</a>
+                        <a href="{{ url_for('dashboard') }}" class="button"><span>PREVIDÊNCIA PÚBLICA</span> • Calculadora</a>
                         <button class="info-button" onclick="openModal('previdencia')">?</button>
                     </div>
                     <div id="cta_botao">
-                        <a href="{{ url_for('possivel') }}" class="button"><span>RENDA POSSÍVEL</span> • Previdência + Carteira de Rendimentos</a>
+                        <a href="{{ url_for('possivel') }}" class="button"><span>RENDA POSSÍVEL</span> • Previdência + Carteira de Investimentos</a>
                         <button class="info-button" onclick="openModal('renda-possivel')">?</button>
                     </div>
                     <div id="cta_botao">
-                        <a href="{{ url_for('desejada') }}" class="button"><span>RENDA DESEJADA</span> • Previdência + Carteira de Rendimentos</a>
+                        <a href="{{ url_for('desejada') }}" class="button"><span>RENDA DESEJADA</span> • Previdência + Carteira de Investimentos</a>
                         <button class="info-button" onclick="openModal('renda-desejada')">?</button>
                     </div>
                 </div>
@@ -48,14 +48,14 @@
                 <div class="instrucao">
                     <h2>Instruções de Uso</h2>
                     <p>
-                        Para fazer o Cálculo de renda é <br>
-                        preciso que você baixe o CNIS <br>
-                        no site da Previdência e anexe o <br>
-                        mesmo aqui na calculadora.
+                        Para fazer o Cálculo da sua Renda na<br>
+                        Previdência é preciso que você baixe<br>
+                        O CNIS no site da Previdência<br>
+                        e anexe o mesmo aqui na calculadora.
                     </p>
 
                     <div id="cta_botao2">
-                        <a href="#menu" class="button">ASSISTA O VÍDEO EM COMO BAIXAR</a>
+                        <a href="#menu" class="button">ASSISTA O VÍDEO E SAIBA COMO BAIXAR</a>
                     </div>
                 </div>
             </div>
