@@ -1,89 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
-import datetime
-from functools import wraps
-import matplotlib.pyplot as plt  # Para gráficos
-import io  # Para manipulação de PDFs e imagens na memória
-import base64
-import pdfplumber 
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas # Para manipulação de PDF
-from werkzeug.utils import secure_filename
-import numpy as np
-from scipy.optimize import fminbound
-import matplotlib.pyplot as plt
-from datetime import datetime
-import base64
-import os
-from io import BytesIO
-import pandas as pd
-import locale
-from flask_mail import Mail, Message
-import matplotlib.image as mpimg
-from reportlab.platypus import Image
+
+#CRIA PAGINA COM DASH QUE GERA RELATORIO INSS E SIMULACAO RENDA
 
 
-app = Flask(__name__)
 
-def setup_locale():
-    try:
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    except locale.Error:
-        print("Locale not supported")
+#FUNCAO DE CRIA RELATORIO FINAL INSS USADA NO DASH
+def criar_relat_pdf(SX,SLBRT):
 
-# Configuração do banco de dados SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'supersecretkey'
-
-db = SQLAlchemy(app)
-
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'contato.guiarendaprevidencia@gmail.com'
-app.config['MAIL_PASSWORD'] = 'qjwt kesm tyzt xgkk'
-app.config['MAIL_DEFAULT_SENDER'] = 'contato.guiarendaprevidencia@gmail.com'
-
-mail = Mail(app)
-
-
-# Modelo de usuário
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable= False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-
-# Criar o banco de dados e as tabelas
-with app.app_context():
-    db.create_all()
-
-# Função de autenticação (para proteger rotas)
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.cookies.get('auth-token')  # Por exemplo, obtendo o token do cabeçalho de autorização
-
-        if not token:
-            return redirect(url_for('login'))
-        try:
-            jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        except:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated
-
-def criar_relat_pdf(SX,SLBRT, cnis_path):
-
-    SX = int(SX)
-
-    import os
+    import pandas as pd
     # Caminho para o arquivo Excel
-    path = os.path.join(app.root_path, 'static', 'assets', 'arquivos', 'series.xlsx')
+    path = r'F:\PYTHON T1\CNIS\series.xlsx'
 
     # Nome da aba que contém as colunas
     sheet_name = 'myseries'
@@ -109,7 +34,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     import pdfplumber
     import re
 
-    pdf_path = cnis_path
+    pdf_path = r'F:\PYTHON T1\CNIS\CNIS.PDF'
 
     # Use pdfplumber para extrair texto e informações de layout
     with pdfplumber.open(pdf_path) as pdf:
@@ -182,7 +107,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     import pdfplumber
     import re
 
-    pdf_path = cnis_path
+    pdf_path = r'F:\PYTHON T1\CNIS\CNIS.PDF'
 
     # Use pdfplumber para extrair texto e informações de layout
     with pdfplumber.open(pdf_path) as pdf:
@@ -219,6 +144,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
                 if len(corresponde)> 1:#filtra data com padrao isolada em alguma linha
                     D_V.extend(corresponde)#receve os pares D&V de cada linha apos filtros
 
+    import pandas as pd
 
     # Divida os elementos de D_V em datas (comp) e valores (remu)
     comp = D_V[::2]
@@ -400,6 +326,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     #CALCULA IDADE PARA REGRA DE IDADE
     #REGRA IDADE: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
 
+    import pandas as pd
     from datetime import datetime, timedelta
 
     #XXXXXXXXXXXXXXXXXXX
@@ -409,30 +336,21 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #Ajusta carencia em funcao do sexo,idade e ingresso no inss  p aposent por idade
     #SX = 1  # Substitua pelo sexo real (1 para masculino, 0 para feminino)
-    DatRef = pd.to_datetime('13/11/2019', format='%d/%m/%Y')  # Data da reforma
-    DatIng = IDADE['comp'].min()  # Data de ingresso provisória
-
-    print(DatRef)
-    print(DatIng)
-    print(SX)
+    DatRef = pd.to_datetime('13/11/2019', format='%d/%m/%Y') #reforma
+    DatIng = IDADE['comp'].min() #data de ingresso provisoria (ajustar por data na linha Seq1 do cnis...)
+    #print(DatIng)
 
     if SX == 1 and DatIng < DatRef:
-        print('CHEGUEI AQUI PRIMEIRO IF')
-        CARid = 180
-        idade_final = 65
-    elif SX == 1 and DatIng >= DatRef: 
-        print('CHEGUEI AQUI SEGUNDO IF') # Use >= para cobrir todos os casos
-        CARid = 240
-        idade_final = 65
-    elif SX == 0:
-        print('CHEGUEI AQUI TERCEIRO IF')
-        CARid = 180
-        idade_final = 62
-    else:
-        print('NADA AVE')
         CARid = 180
         idade_final = 65
 
+    if SX == 1 and DatIng > DatRef:
+        CARid = 240
+        idade_final = 65
+
+    if SX == 0:
+        CARid = 180
+        idade_final = 62
 
     # Definir a data de nascimento
     nasc_str = NASCI
@@ -497,17 +415,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if IDADE['AdicDt'].sum() == 0:
         if IDADE.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_id = IDADE.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por carencia:", dt_ap_id)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_id = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por idade:", dt_ap_id)
     else:
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_id = IDADE['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 'comp' é:", dt_ap_id)
@@ -629,7 +547,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
             BNFC = max(BenCOtim, BenSOtim)
 
     #PARAMETROS DE APOSENTADORIA IDADE PARA TABELA PDF DE RELATORIO
-    # INDICA Benefício Estimado DE APOSENTADORIA POR IDADE
+    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA POR IDADE
     vlr_id = BNFC
 
     # Criar a variável string 'bnf_id' com formatação para exibir todas as casas decimais
@@ -656,12 +574,13 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     ATNTV = pd.DataFrame({
         'Regra': ['Idade'],
         'Data Aposentadoria': [dt_ap_id],
-        'Benefício Estimado': [bnf_id],
-        'Número Futuro Contribuições': [ctr_id],
-        'Salário Futuro Bruto': [parcela]})
+        'Beneficio Estimado': [bnf_id],
+        'Numero_Futuro Contribuicoes': [ctr_id],
+        'Salario_Futuro Bruto': [parcela]})
 
     #CALCULA IDADE PARA REGRA DE PONTOS
     #REGRA PONTOS: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
+    import pandas as pd
     from datetime import datetime, timedelta
     #XXXXXXXXXXXXXXXXXXX
     pts = extpr.copy() #cria df p aposentadoria por pontos (apargar linhas acima de xxxxxx)
@@ -890,18 +809,18 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #LOCALIZA A DATA DE APOSENTADORIA POR PONTOS
     if Regptos==1:
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_pt = LPS['comp'].dt.strftime('%b/%Y').iloc[0].capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("Data por pontos:", dt_ap_pt)
     else:
         #nao faz sentido, so p dar vasao ao fluxo e a variavel recever ALGUM VALOR...
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_pt = pts['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 'comp' é:", dt_ap_pt)
 
-    # INDICA Benefício Estimado DE APOSENTADORIA POR PONTOS
+    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA POR PONTOS
     if Regptos==1:
         vlr_pt = BNFC
         # Criar a variável string 'bnf_pt' com formatação para exibir todas as casas decimais
@@ -930,13 +849,14 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pontos'],
         'Data Aposentadoria': [dt_ap_pt],
-        'Benefício Estimado': [bnf_pt],
-        'Número Futuro Contribuições': [ctr_pt],
-        'Salário Futuro Bruto': [parcela]})
+        'Beneficio Estimado': [bnf_pt],
+        'Numero_Futuro Contribuicoes': [ctr_pt],
+        'Salario_Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA IDADE PROGRESSIVA: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
+    import pandas as pd
     from datetime import datetime, timedelta
 
     prgv = extpr.copy() #cria df p aposentadoria progressiva (apargar linhas acima de xxxxxx)
@@ -1166,17 +1086,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #LOCALIZA A DATA DE APOSENTADORIA PROGRESSIVA
     if Regprg==1:
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_prg = LPS['comp'].dt.strftime('%b/%Y').iloc[0].capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("Data por progressiva:", dt_ap_prg)
     else:
         #nao faz sentido, so p dar vazao ao fluxo
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_prg = prgv['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
 
-    # INDICA Benefício Estimado DE APOSENTADORIA PROGRESSIVA
+    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA PROGRESSIVA
     if Regprg==1:
         vlr_prg = BNFC
         # Criar a variável string 'bnf_pt' com formatação para exibir todas as casas decimais
@@ -1204,13 +1124,14 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Progressiva'],
         'Data Aposentadoria': [dt_ap_prg],
-        'Benefício Estimado': [bnf_prg],
-        'Número Futuro Contribuições': [ctr_prg],
-        'Salário Futuro Bruto': [parcela]})
+        'Beneficio Estimado': [bnf_prg],
+        'Numero_Futuro Contribuicoes': [ctr_prg],
+        'Salario_Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA PEDAGIO 100: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
+    import pandas as pd
     from datetime import datetime, timedelta
 
     pdg100 = extpr.copy()
@@ -1401,22 +1322,22 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if pdg100['AdicDt'].sum() == 0 and Reg100==1:
         if pdg100.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_100 = pdg100.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por pedagio100:", dt_ap_100)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_100 = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por pedagio100:", dt_ap_100)
     else:
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_100 = pdg100['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 100 é:", dt_ap_100)
 
-    # INDICA Benefício Estimado DE APOSENTADORIA PEDAGIO 100
+    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA PEDAGIO 100
     if Reg100==1:
         vlr_100 = BNFC
     else:
@@ -1444,13 +1365,14 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pedagio100'],
         'Data Aposentadoria': [dt_ap_100],
-        'Benefício Estimado': [bnf_100],
-        'Número Futuro Contribuições': [ctr_100],
-        'Salário Futuro Bruto': [parcela]})
+        'Beneficio Estimado': [bnf_100],
+        'Numero_Futuro Contribuicoes': [ctr_100],
+        'Salario_Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA PEDAGIO 50: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
+    import pandas as pd
     from datetime import datetime, timedelta
 
     pdg50 = extpr.copy()
@@ -1496,21 +1418,21 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if pdg50['AdicDt'].sum() == 0 and Reg50==1:
         if pdg50.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_50 = pdg50.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por pedagio50:", dt_ap_50)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_50 = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             print("Data por pedagio50:", dt_ap_50)
     else:
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_50 = pdg50['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
 
-    # INDICA Benefício Estimado DE APOSENTADORIA CARENCIA100
+    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA CARENCIA100
     #vlr_50 = 4500.00
 
     # Criar a variável string 'bnf_100' com formatação para exibir todas as casas decimais
@@ -1540,13 +1462,14 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pedagio50'],
         'Data Aposentadoria': [dt_ap_50],
-        'Benefício Estimado': [bnf_50],
-        'Número Futuro Contribuições': [ctr_50],
-        'Salário Futuro Bruto': [parcela]})
+        'Beneficio Estimado': [bnf_50],
+        'Numero_Futuro Contribuicoes': [ctr_50],
+        'Salario_Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #REGRA PEDAGIO 100p50: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
+    import pandas as pd
     from datetime import datetime, timedelta
 
     pdg1p5 = extpr.copy()
@@ -1738,22 +1661,22 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     if pdg1p5['AdicDt'].sum() == 0 and Reg100to50==1:
         if pdg1p5.loc[CARid - 1, 'comp'] >= mes_idade_final:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_1p5 = pdg1p5.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data por pedagio100p50:", dt_ap_1p5)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_1p5 = mes_idade_final.strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por pedagio1p5:", dt_ap_1p5)
     else:
-        locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
         dt_ap_1p5 = pdg1p5['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 100p50 é:", dt_ap_1p5)
 
-    # INDICA Benefício Estimado DE APOSENTADORIA CARENCIA100p50
+    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA CARENCIA100p50
     if Reg100to50==1:
         vlr_1p5 = BNFC
         # Criar a variável string 'bnf_100' com formatação para exibir todas as casas decimais
@@ -1782,18 +1705,19 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pedagio100'],
         'Data Aposentadoria': [dt_ap_1p5],
-        'Benefício Estimado': [bnf_1p5],
-        'Número Futuro Contribuições': [ctr_1p5],
-        'Salário Futuro Bruto': [parcela]})
+        'Beneficio Estimado': [bnf_1p5],
+        'Numero_Futuro Contribuicoes': [ctr_1p5],
+        'Salario_Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
     #CRIA dataframe que encontra vinculos empregaticios e data ingresso inss
 
+    import pandas as pd
     import re
     import pdfplumber
 
-    pdf_path = cnis_path
+    pdf_path = r'F:\PYTHON T1\CNIS\CNIS.PDF'
 
     # Cria um DataFrame vazio para armazenar os dados
     VCLS = pd.DataFrame(columns=['VÍNCULO'])
@@ -1835,6 +1759,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CRIACAO do PDF com vinculos empregaticios
 
+    import pandas as pd
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib import colors
@@ -1843,7 +1768,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.platypus.flowables import Flowable
 
     # Caminho do arquivo PDF
-    vinculos_pdf = BytesIO()
+    pdf_path = r'F:\PYTHON T1\CNIS\vinculos.PDF'
 
     # DataFrame 'VCLS' já existe em memória (certifique-se de que está preenchido)
     # VCLS = ...
@@ -1930,9 +1855,10 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         doc.build(content)
 
     # Chamar a função para criar o PDF usando o DataFrame existente 'VCLS'
-    create_pdf(VCLS, vinculos_pdf)
+    create_pdf(VCLS, pdf_path)
 
     #CRIACAO do pdf com dados do filiado
+    import pandas as pd
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib import colors
@@ -1941,7 +1867,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.platypus.flowables import Flowable
 
     # Caminho do arquivo PDF
-    filiado_pdf = BytesIO()
+    pdf_path = r'F:\PYTHON T1\CNIS\filiado.PDF'
 
     # Adicionando um atributo 'name' ao DataFrame 'ATNTV'
     ATNTV.name = 'ATNTV'
@@ -2198,14 +2124,15 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         doc.build(content)
 
     # Chamar a função para criar o PDF usando o DataFrame existente 'VCLS'
-    create_pdf(ATNTV, filiado_pdf)
+    create_pdf(ATNTV, pdf_path)
 
     #ENCONTRA lEGENDA DE INDICADORES no df df_SGS
 
     import pdfplumber
     import re
+    import pandas as pd
 
-    pdf_path = cnis_path
+    pdf_path = r'F:\PYTHON T1\CNIS\CNIS.pdf'
     padraoS = r'([A-Z]{3,}[A-Z0-9\-]*)\s'
     df_SGS = pd.DataFrame(columns=['Elemento'])  # Inicializa o DataFrame para armazenar elementos encontrados
 
@@ -2239,8 +2166,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     #importa todas as tabelas d pdf SEM quebras \n E +d 1 tabela por pagina E salva dataframe sgls
 
     import pdfplumber
+    import pandas as pd
 
-    my_path = os.path.join('static', 'assets', 'arquivos', 'mysiglas.pdf')
+    pdf_path = r'F:\PYTHON T1\CNIS\mysiglas.PDF'
 
     def process_table(table):
         for i in range(len(table)):
@@ -2258,7 +2186,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     # Criar um DataFrame vazio
     mysgls = pd.DataFrame(columns=['Tipo', 'Grupo', 'Indicador', 'Descricao', 'Esclarecimentos'])
 
-    with pdfplumber.open(my_path) as pdf:
+    with pdfplumber.open(pdf_path) as pdf:
         for page_number in range(len(pdf.pages)):
             # Obtém a página
             page = pdf.pages[page_number]
@@ -2289,6 +2217,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CRIACAO do df mylgdi usando coluna Elemente do df df_SGS e coluna Indicador do df mysgls
 
+    import pandas as pd
 
     # Suponha que você já tenha seus dataframes df_SGS e mysgls carregados
 
@@ -2314,6 +2243,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     #CRIACAO do pdf indicadores, resultado da busca e insercao de informacao s indicadores
 
+    import pandas as pd
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib import colors
@@ -2322,7 +2252,8 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.platypus.flowables import Flowable
 
     # Caminho do arquivo PDF
-    indicadores_pdf = BytesIO()
+    pdf_path = r'F:\PYTHON T1\CNIS\indicadores.PDF'
+
     #Adicionando um atributo 'name' ao DataFrame 'mylgdi'
     mylgdi.name = 'mylgdi'
 
@@ -2405,7 +2336,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         doc.build(content)
 
     # Chamar a função para criar o PDF usando o DataFrame existente 'mylgdi'
-    create_pdf(mylgdi, indicadores_pdf, mylgdi.name)
+    create_pdf(mylgdi, pdf_path, mylgdi.name)
 
     #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -2416,20 +2347,16 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     from reportlab.pdfgen import canvas
     from reportlab.lib.colors import gray, black,white, orangered  # Cor para a linha
     import io
-    
-    def add_page_numbers_and_header(pdf_buffer):
-        # Criar um buffer para armazenar as alterações
+
+    def add_page_numbers_and_header(pdf_path):
         packet = io.BytesIO()
         can = canvas.Canvas(packet, pagesize=letter)
-
-        # Ler o PDF existente do buffer
-        existing_pdf = PyPDF2.PdfReader(pdf_buffer)
+        existing_pdf = PyPDF2.PdfReader(pdf_path)
         number_of_pages = len(existing_pdf.pages)
-        page_width, page_height = letter
+        page_width, page_height = letter#[0]  # Largura da página no formato letter
         header_height = 50  # Altura do cabeçalho
         line_position_x = 50  # Posição x da linha vertical
         footer_height = 20   # Altura do texto no rodapé
-        image_path = './static/assets/GRP branding.LOGOMARCA.png'
 
         font_name = "Helvetica-Bold"
         header_text = "GrP - Análise Previdência"
@@ -2475,53 +2402,29 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
             can.drawString(40, 20, "guiarendaprevidencia.com.br")
 
             can.showPage()
-
         can.save()
 
-        # Retornar o buffer para o início
         packet.seek(0)
-
-        # Lendo o novo PDF com o cabeçalho e números de página
         new_pdf = PyPDF2.PdfReader(packet)
-
-        # Criando o escritor de saída
         output = PyPDF2.PdfWriter()
         for page_number in range(number_of_pages):
             page = existing_pdf.pages[page_number]
             page.merge_page(new_pdf.pages[page_number])
             output.add_page(page)
 
-        # Criar um novo buffer para o PDF final
-        final_buffer = io.BytesIO()
-        output.write(final_buffer)
-        final_buffer.seek(0)  # Voltar ao início do buffer para leitura posterior
+        with open(pdf_path, "wb") as outputStream:
+            output.write(outputStream)
 
-        return final_buffer
-
-
-    def merge_pdfs(filepaths):
+    def merge_pdfs(filepaths, output_filepath):
         pdf_writer = PyPDF2.PdfWriter()
         for filepath in filepaths:
-            if isinstance(filepath, BytesIO):
-                filepath.seek(0)
-                pdf_reader = PyPDF2.PdfReader(filepath)
-            else:
-                pdf_reader = PyPDF2.PdfReader(filepath)
-
-            # Adiciona todas as páginas ao writer
+            pdf_reader = PyPDF2.PdfReader(filepath)
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
                 pdf_writer.add_page(page)
-
-        # Armazena o PDF no buffer em vez de no disco
-        output_buffer = BytesIO()
-        pdf_writer.write(output_buffer)
-        output_buffer.seek(0)  # Certifique-se de que estamos no início para leitura posterior
-
-        # Adicionar numeração e cabeçalho
-        final_pdf_with_header = add_page_numbers_and_header(output_buffer)
-
-        return final_pdf_with_header
+        with open(output_filepath, 'wb') as output_file:
+            pdf_writer.write(output_file)
+        add_page_numbers_and_header(output_filepath)
 
     def criar_nome_pdf(nome):
         nome_arquivo = '_'.join(nome.split()[:2])
@@ -2529,20 +2432,37 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         nome_pdf = f"{nome_arquivo}_{data_hora_atual}.pdf"
         return nome_pdf
 
+    # Caminho do diretório raiz
+    diretorio_raiz = r'F:\PYTHON T1\CNIS'
+    #nome = 'DIOGENES JOSE DE PAIVA JUNIOR'
+    nome='RelatInss'
+    pdf_files = [r'F:\PYTHON T1\CNIS\filiado.pdf', r'F:\PYTHON T1\CNIS\vinculos.pdf', r'F:\PYTHON T1\CNIS\indicadores.pdf']
+    image_path = r'F:\PYTHON T1\CNIS\logo_GrP.png'  # Caminho para a imagem
+    #output_file = os.path.join(diretorio_raiz, criar_nome_pdf(nome))
+    output_file = os.path.join(diretorio_raiz, f"{nome}.pdf")
 
-    pdf_files = [filiado_pdf, vinculos_pdf, indicadores_pdf]
-    pdf = merge_pdfs(pdf_files)
-    atntv_html = ATNTV.to_dict(orient="records")
-    print(atntv_html)
+    merge_pdfs(pdf_files, output_file)
 
-    return pdf, atntv_html
+    # Abrir o PDF criado
+    #os.startfile(output_file)
+
+    return ATNTV
 
 
-def verifica_cnis(cnis_path):
+# In[ ]:
+
+
+
+
+
+# In[2]:
+
+
+def verifica_cnis():
     import pdfplumber
     import re
 
-    pdf_path = cnis_path
+    pdf_path = r'F:\PYTHON T1\CNIS\CNIS.PDF'
 
     # Use pdfplumber para extrair texto e informações de layout
     with pdfplumber.open(pdf_path) as pdf:
@@ -2577,911 +2497,813 @@ def verifica_cnis(cnis_path):
                         pare = 1
     return contapalavras
 
-# Rota para login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    token = request.cookies.get('auth-token')
 
-    if token:
-        return render_template('calculadora.html')
+# In[ ]:
 
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        user = User.query.filter_by(email=email).first()
 
-        if user and check_password_hash(user.password, password):
-            token = jwt.encode({
-                'user_id': user.id,
-            }, app.config['SECRET_KEY'], algorithm='HS256')
-            response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
-            response.set_cookie('auth-token', token, httponly=True)
-            return response, 200  # Retorna um JSON com status 200
 
-        return jsonify({'message': 'Credenciais inválidas.'}), 401
 
-    return render_template('auth/login.html')
 
-@app.route('/calculadora')
-@token_required
-def dashboard():
-    return render_template('calculadora.html')
+# In[ ]:
 
-@app.route('/desejada')
-@token_required
-def desejada():
-    return render_template('desejada.html')
 
-@app.route('/possivel')
-@token_required
-def possivel():
-    return render_template('possivel.html')
+#GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
 
-@app.route('/perfil')
-@token_required
-def perfil():
-    return render_template('perfil.html')
 
-@app.errorhandler(404)
-def page_not_found(e):
-    # Exibe uma página 404 personalizada ou redireciona para uma página desejada
-    return render_template('404.html'), 404
+# In[ ]:
 
-@app.route('/')
-@token_required
-def sobre():
-    return render_template('sobre.html')
 
-@app.route('/contato')
-@token_required
-def contato():
-    return render_template('contato.html')
+#As duas funcoes de graficos desejado e possivel
 
-@app.route('/getUser', methods=['GET'])
-@token_required
-def getUser():
-    token = request.cookies.get('auth-token')
+import numpy as np
+import pandas as pd
+from scipy.optimize import fminbound
+import matplotlib.pyplot as plt
+from datetime import datetime
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output, State
+import dash_bootstrap_components as dbc
+import base64
+import os
 
-    if not token:
-        flash('Token não encontrado.')
-        return render_template('perfil.html')
+# Função para criar o gráfico renda desejada
+def criar_grafico(idade_inicial, idade_aposentadoria, expec_vida, reserva,ret_invest_anual,inss,renda_desejada):
+    #reserva = 16000
+    #renda_desejada = 7000
+    #inss = 0
+    complemento = renda_desejada - inss
+    #ret_invest_anual = 0.02  # 2% anual
+    ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Mensalizando a taxa anual
 
-    try:
-        # Decodificando o token para obter o user_id
-        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        user_id = payload['user_id']
+    # Construir a coluna 'idade'
+    idade = np.arange(idade_inicial, expec_vida + 1)
 
-        # Buscando o usuário no banco de dados
-        user = User.query.get(user_id)
-        if user is None:
-            flash('Usuário não encontrado.')
-            return render_template('perfil.html')
+    # Construir a coluna 'Salario'
+    salario = np.where(idade < idade_aposentadoria, 0, renda_desejada)
 
-        # Retornando os dados do usuário para o template
-        return render_template('perfil.html', user=user)
+    # Construir a coluna 'Complemento'
+    complemento_col = np.where(idade < idade_aposentadoria, 0, complemento)
 
-    except jwt.ExpiredSignatureError:
-        flash('Token expirado.')
-        return render_template('perfil.html')
-    except jwt.InvalidTokenError:
-        flash('Token inválido.')
-        return render_template('perfil.html')
+    # Função que calcula o valor futuro (FV) equivalente à fórmula do Excel
+    def FV(rate, nper, pmt):
+        if rate == 0:
+            return pmt * nper
+        return pmt * ((1 + rate) ** nper - 1) / rate
 
-@app.route('/alterarSenha', methods=['POST'])
-@token_required
-def alterarSenha():
-    token = request.cookies.get('auth-token')
-    new_password = request.form.get('new_password')
+    # Função para calcular a coluna 'Poupanca'
+    def calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal):
+        poupanca = np.zeros_like(idade, dtype=float)
+        for i in range(len(idade)):
+            if idade[i] < idade_aposentadoria:
+                poupanca[i] = FV(ret_invest_mensal, 12, D5)
+            else:
+                poupanca[i] = -FV(ret_invest_mensal, 12, complemento_col[i])
+        return poupanca
 
-    if not token or not new_password:
-        flash('Token ou nova senha não encontrados.')
-        return redirect(url_for('perfil'))
+    # Função para calcular a coluna 'Acumula'
+    def calcular_acumula(poupanca, reserva, ret_invest_anual):
+        acumula = np.zeros_like(poupanca, dtype=float)
+        acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
+        for i in range(1, len(poupanca)):
+            acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
+        return acumula
 
-    try:
-        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        user_id = payload['user_id']
-        user = User.query.get(user_id)
+    # Função objetivo para otimização
+    def func_objetivo(D5):
+        poupanca = calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal)
+        acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
+        return abs(acumula[-1])
 
-        if user is None:
-            flash('Usuário não encontrado.')
-            return redirect(url_for('perfil'))
+    # Intervalo de busca para D5
+    d5_min = 0.0
+    d5_max = 1000000
 
-        # Atualizar a senha
-        user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
-        db.session.commit()
-        flash('Senha alterada com sucesso!')
-        return redirect(url_for('perfil'))
+    # Encontrar o valor ótimo de D5
+    D5_otimo = fminbound(func_objetivo, d5_min, d5_max)
 
-    except jwt.ExpiredSignatureError:
-        flash('Token expirado.')
-        return redirect(url_for('perfil'))
-    except jwt.InvalidTokenError:
-        flash('Token inválido.')
-        return redirect(url_for('perfil'))
+    # Calcular as colunas finais usando o valor ótimo de D5
+    poupanca_final = calcular_poupanca(D5_otimo, idade, salario, complemento_col, ret_invest_mensal)
+    acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
 
-@app.route('/forgotPassword', methods=['POST', 'GET'])
-def forgotPassword():
-
-    if request.method == 'POST':
-        email = request.form['email']
-
-        user = User.query.filter_by(email=email).first()
-
-        if not user:
-            error_email = 'Email não cadastrado no sistema'
-            return render_template('auth/resetPassword.html', error_email=error_email)
-        
-        newPassword = request.form['password']
-        confirm_password = request.form['password_confirmation']
-
-        if newPassword != confirm_password:
-            error_password = 'As senhas não coincidem'
-            return render_template('auth/resetPassword.html', error_password=error_password)
-
-        user.password = generate_password_hash(newPassword)
-        db.session.commit()
-        print('senha alterada com sucesso')
-        return render_template('auth/login.html')
-        
-    return render_template('auth/resetPassword.html')
-
-@token_required
-@app.route('/remakePassword', methods=['POST'])
-def mudarSenha():
-    token = request.form.get('token')  # Obtenha o token do formulário
-    nova_senha = request.form.get('new_password')
-    confirmar_senha = request.form.get('confirm_password')
-
-    if nova_senha != confirmar_senha:
-        senha_error = 'As senhas não coincidem.'
-        return render_template('perfil.html', senha_error=senha_error)
-
-    try:
-        # Decodificando o token JWT
-        decoded_data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        user_id = decoded_data.get('user_id')
-
-        # Obtendo o usuário pelo ID
-        user = User.query.get(user_id)  # Usando SQLAlchemy para obter o usuário
-
-        if user is None:
-            flash('Usuário não encontrado.', 'error')
-            return redirect('/getUser')
-
-        # Atualizando a senha do usuário
-        user.password = generate_password_hash(nova_senha)
-        db.session.commit() 
-        
-        senha_mensagem = 'Senha Alterada com Sucesso!' # Salva as alterações no banco de dados
-        return render_template('perfil.html', senha_mensagem=senha_mensagem)
-
-    except jwt.ExpiredSignatureError:
-        flash('O token de autenticação expirou.', 'error')
-        return redirect('/getUser')
-
-    except jwt.DecodeError:
-        flash('Token inválido.', 'error')
-        return redirect('/getUser')
-
-    except Exception as e:
-        flash(f'Ocorreu um erro: {str(e)}', 'error')
-        return redirect('/getUser')      
-
-# Rota para logout
-@app.route('/logout')
-def logout():
-    response = redirect(url_for('login'))
-    response.set_cookie('auth-token', '', expires=0)
-    flash('Logout realizado com sucesso.')
-    return response
-
-@app.route('/grafico_renda_desejada', methods=['POST'])
-@token_required
-def criar_grafico_rendaDesejada():
+    # Criar o DataFrame e formatar as colunas com duas casas decimais
+    RDB = pd.DataFrame({
+        'Idade': idade,
+        'Salario': salario,
+        'Complemento': complemento_col,
+        'Poupanca': poupanca_final.round(2),
+        'Acumula': acumula_final.round(2)
+    })
     
-    if request.method == 'POST':
-        # Recebendo os campos do formulário
-        idade_inicial = request.form['id_ini']
-        idade_aposentadoria = request.form['id_apos']
-        expec_vida = request.form['id_exp']
-        reserva = request.form['id_reser']
-        inss = request.form['id_inss']
-        renda_desejada = request.form['id_dese']
-        taxa_real_ano2 = request.form['id_tx']
+    # Configurações do gráfico
+    fig, ax1 = plt.subplots(figsize=(13, 7))  # Ajustar o tamanho da figura
 
-        if not taxa_real_ano2:
-            return render_template('desejada.html', error_taxa="Por favor, insira um valor na taxa real")
+    # Eixo X
+    ax1.set_xlim([idade_inicial, expec_vida])
+    ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
+    ax1.set_xlabel('Idade', fontweight='bold',fontsize=15)
 
-        taxa_real_ano = int(taxa_real_ano2)
+    # Eixo Y primário
+    #max(renda_desejada, D5_otimo) ajuste para qdo poupanca for maior renda desejada
+    ax1.set_ylim([0, max(renda_desejada, D5_otimo) + 1000])
+    ax1.set_yticks(np.arange(0, max(renda_desejada, D5_otimo) + 2000, 1000))
+    ax1.set_ylabel('Renda (R$)', fontweight='bold',fontsize=15)
+    ax1.set_yticklabels([f'R${x},00' for x in np.arange(0, max(renda_desejada, D5_otimo) + 2000, 1000)])
 
-        # Função para validar se o valor é um número inteiro
-        def validar_inteiro(valor):
-            try:
-                return int(valor)
-            except ValueError:
-                return None
+    # Plotando a curva de Poupança (pontilhada vermelha)
+    ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
+             [D5_otimo] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
+             'r.:', linewidth=2, markersize=8, label='Poupança')
 
-        # Função para validar se o valor é um número float com uma casa decimal
-        def validar_taxa_real(taxa_real):
-            if not taxa_real:
-                return "Digite um número MAIOR que zero com no máximo uma casa decimal"
-            
-            try:
-                taxa = float(taxa_real)
-                if taxa <= 0 or len(taxa_real.split('.')[1]) > 1:
-                    return "Digite um número MAIOR que zero com no máximo uma casa decimal"
-            except ValueError:
-                return "Digite um número MAIOR que zero com no máximo uma casa decimal"
-            
-            return None  # Tudo certo
+    # Plotando a curva de Renda (tracejada verde)
+    ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
+             [renda_desejada] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
+             'g--', linewidth=5, label='Renda')
 
+    # Eixo Y secundário
+    ax2 = ax1.twinx()
+    ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
+    ax2.set_ylabel('Reserva Acumulada Milhares (R$)', fontweight='bold',fontsize=15, labelpad=5)  # Ajuste do labelpad
 
-        # Validações para o campo IDADE INICIAL
-        idade_inicial = validar_inteiro(idade_inicial)
-        if idade_inicial is None or idade_inicial < 15 or idade_inicial > 100:
-            return render_template("desejada.html", error_idade="Digite um número inteiro entre 15 e 100 para a idade inicial")
+    # Adicionar linha vertical em grey saindo de 'idade_aposentadoria - 1' até RDB.Acumula.max()
+    max_acumula = RDB['Acumula'].max() / 1000  # Convertendo para milhares
+    ax2.axvline(x=idade_aposentadoria - 1, color='grey', linestyle='--')
+    ax2.plot([idade_aposentadoria - 1, idade_aposentadoria - 1], [0, max_acumula], color='grey', linestyle='--')
 
-        # Validações para o campo IDADE APOSENTADORIA
-        idade_aposentadoria = validar_inteiro(idade_aposentadoria)
-        if idade_aposentadoria is None or idade_aposentadoria < 15 or idade_aposentadoria > 120 or idade_aposentadoria <= idade_inicial:
-            return render_template("desejada.html",error_aposentadoria="Digite um número inteiro maior que a idade atual para aposentadoria")
+    # Formatar os rótulos do eixo Y secundário
+    ticks = np.linspace(0, max_acumula, num=6)
+    ax2.set_yticks(ticks)
+    ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
 
-        # Validações para o campo EXPECTATIVA DE VIDA
-        expec_vida = validar_inteiro(expec_vida)
-        if expec_vida is None or expec_vida < 15 or expec_vida > 150 or expec_vida <= idade_aposentadoria:
-            return render_template("desejada.html",error_vida="Digite um número inteiro maior que a idade de aposentadoria para a expectativa de vida")
+    # Título
+    plt.title('Condições para Renda Desejada', fontweight='bold',fontsize=20)
 
-        # Validações para o campo RESERVA FINANCEIRA
-        reserva = validar_inteiro(reserva)
-        if reserva is None or reserva < 0:
-            return render_template('desejada.html', error_reserva = "Digite um número inteiro maior ou igual a zero para a reserva financeira")
+    # Legendas
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False, fontsize=15)
 
-        # Validações para o campo TAXA REAL ANUAL
-        taxa_real_ano = validar_taxa_real(taxa_real_ano)
-        if taxa_real_ano is None or taxa_real_ano <= 0:
-            return render_template('desejada.html', error_taxa="Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual")
+    # Adicionar caixa de texto com informações adicionais ao lado direito do gráfico
+    info_text = (
+        f"{'RESUMO':^30}\n\n"  # Inserir 'RESUMO' em negrito e centralizado
+        f"Aposentadoria aos {idade_aposentadoria} anos\n\n"
+        f"Reserva Atual\n"
+        f"R$ {reserva:,.0f}\n\n"
+        f"Reserva aos {idade_aposentadoria} anos\n"
+        f"R$ {RDB['Acumula'].max():,.0f}\n\n"
+        f"Poupança até {idade_aposentadoria} anos (P)\n"
+        f"R$ {D5_otimo:,.0f}/mês\n\n"
+        f"Renda INSS (1)\n"
+        f"R$ {inss:,.0f}\n\n"
+        f"Renda Investimento (2)\n"
+        f"R$ {RDB['Complemento'].max():,.0f}\n\n"
+        f"Renda DESEJADA (1)+(2)\n"
+        f"R$ {renda_desejada:,.0f}/mês\n"
+    )
+    plt.gcf().text(1.17, 0.5, info_text, fontsize=15, bbox=dict(facecolor='white', alpha=0.5), transform=ax1.transAxes, verticalalignment='center')
 
-        # Validações para o campo BENEFÍCIO ESPERADO INSS
-        inss = validar_inteiro(inss)
-        if inss is None or inss < 0:
-            return render_template('desejada.html', error_inss="Digite um número inteiro maior ou igual a zero para o benefício esperado do INSS")
+    # Adicionar anotação para a linha verde
+    ax1.annotate(
+        '(1)+(2)',
+        xy=(idade_aposentadoria, renda_desejada),
+        xytext=(idade_aposentadoria + 10, renda_desejada + 200),
+        fontsize=20,
+        ha='center',
+        fontweight='bold'
+    )
 
-        # Validações para o campo RENDA MENSAL DESEJADA
-        renda_desejada = validar_inteiro(renda_desejada)
-        if renda_desejada is None or renda_desejada <= 0:
-            return render_template('desejada.html', error_desejada= "Digite um número inteiro maior que zero para a renda mensal desejada")
+    # Adicionar anotação para a curva vermelha
+    ax1.annotate(
+        'P',
+        xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, D5_otimo),
+        xytext=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, D5_otimo + 100),
+        #xytext=(idade_aposentadoria - 15, D5_otimo + 100),  # Ajuste aqui para mudar a posição do texto
+        fontsize=20,
+        ha='center',
+        fontweight='bold',
+        color='red'
+    )
 
-        # Conversões e cálculos após validações
-        ret_invest_anual = float(taxa_real_ano) / 100
-        ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
+    # Adicionar anotação para a curva azul
+    ax2.annotate(
+        '(2)\n',
+        xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, max_acumula),
+        xytext=(idade_aposentadoria + (expec_vida - idade_aposentadoria) / 2, max_acumula / 2),  # Ajuste aqui para mudar a posição do texto
+        fontsize=20,
+        ha='center',
+        fontweight='bold',
+        color='black'
+    )
 
-        # Construir a coluna 'idade'
-        idade = np.arange(idade_inicial, expec_vida + 1)
+    # Adicionar nota de rodapé
+    fig.text(0.0, -0.05, 'Este gráfico é apenas uma simulação e não deve ser usado como único instrumento para decisões financeiras.\n'
+                        'Consulte um especialista antes de tomar qualquer decisão financeira.', 
+              fontsize=15)
 
-        # Construir a coluna 'Salario'
-        salario = np.where(idade < idade_aposentadoria, 0, renda_desejada)
+    # Ajustando layout
+    plt.tight_layout(rect=[0, 0, 0.95, 1])
 
-        complemento = renda_desejada - inss
+    # Salvar o gráfico em um arquivo
+    png_file_path = fr'F:\PYTHON T1\CNIS\RNDesejada.png'
+    plt.savefig(png_file_path, bbox_inches='tight')
+    pdf_file_path = fr'F:\PYTHON T1\CNIS\RND.pdf'
+    plt.savefig(pdf_file_path, bbox_inches='tight')
 
-        # Construir a coluna 'Complemento'
-        complemento_col = np.where(idade < idade_aposentadoria, 0, complemento)
-
-        # Função que calcula o valor futuro (FV) equivalente à fórmula do Excel
-        def FV(rate, nper, pmt):
-            if rate == 0:
-                return pmt * nper
-            return pmt * ((1 + rate) ** nper - 1) / rate
-
-        # Função para calcular a coluna 'Poupanca'
-        def calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal):
-            poupanca = np.zeros_like(idade, dtype=float)
-            for i in range(len(idade)):
-                if idade[i] < idade_aposentadoria:
-                    poupanca[i] = FV(ret_invest_mensal, 12, D5)
-                else:
-                    poupanca[i] = -FV(ret_invest_mensal, 12, complemento_col[i])
-            return poupanca
-
-        # Função para calcular a coluna 'Acumula'
-        def calcular_acumula(poupanca, reserva, ret_invest_anual):
-            acumula = np.zeros_like(poupanca, dtype=float)
-            acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
-            for i in range(1, len(poupanca)):
-                acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
-            return acumula
-
-        # Função objetivo para otimização
-        def func_objetivo(D5):
-            poupanca = calcular_poupanca(D5, idade, salario, complemento_col, ret_invest_mensal)
-            acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
-            return abs(acumula[-1])
-
-        # Intervalo de busca para D5
-        d5_min = 0.0
-        d5_max = 1000000
-
-        # Encontrar o valor ótimo de D5
-        D5_otimo = fminbound(func_objetivo, d5_min, d5_max)
-
-        # Calcular as colunas finais usando o valor ótimo de D5
-        poupanca_final = calcular_poupanca(D5_otimo, idade, salario, complemento_col, ret_invest_mensal)
-        acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
-
-        # Criar o DataFrame e formatar as colunas com duas casas decimais
-        RDB = pd.DataFrame({
-            'Idade': idade,
-            'Salario': salario,
-            'Complemento': complemento_col,
-            'Poupanca': poupanca_final.round(2),
-            'Acumula': acumula_final.round(2)
-        })
-        
-        # Configurações do gráfico
-        fig, ax1 = plt.subplots(figsize=(13, 7))  # Ajustar o tamanho da figura
-
-        # Eixo X
-        ax1.set_xlim([idade_inicial, expec_vida])
-        ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
-        ax1.set_xlabel('Idade', fontweight='bold',fontsize=15)
-
-        # Eixo Y primário
-        #max(renda_desejada, D5_otimo) ajuste para qdo poupanca for maior renda desejada
-        ax1.set_ylim([0, max(renda_desejada, D5_otimo) + 1000])
-        ax1.set_yticks(np.arange(0, max(renda_desejada, D5_otimo) + 2000, 1000))
-        ax1.set_ylabel('Renda (R$)', fontweight='bold',fontsize=15)
-        ax1.set_yticklabels([f'R${x},00' for x in np.arange(0, max(renda_desejada, D5_otimo) + 2000, 1000)])
-
-        # Plotando a curva de Poupança (pontilhada vermelha)
-        ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
-                [D5_otimo] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
-                'r.:', linewidth=2, markersize=8, label='Poupança')
-
-        # Plotando a curva de Renda (tracejada verde)
-        ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
-                [renda_desejada] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
-                'g--', linewidth=5, label='Renda')
-
-        # Eixo Y secundário
-        ax2 = ax1.twinx()
-        ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
-        ax2.set_ylabel('Reserva Acumulada Milhares (R$)', fontweight='bold',fontsize=15, labelpad=5)  # Ajuste do labelpad
-
-        # Adicionar linha vertical em grey saindo de 'idade_aposentadoria - 1' até RDB.Acumula.max()
-        max_acumula = RDB['Acumula'].max() / 1000  # Convertendo para milhares
-        ax2.axvline(x=idade_aposentadoria - 1, color='grey', linestyle='--')
-        ax2.plot([idade_aposentadoria - 1, idade_aposentadoria - 1], [0, max_acumula], color='grey', linestyle='--')
-
-        # Formatar os rótulos do eixo Y secundário
-        ticks = np.linspace(0, max_acumula, num=6)
-        ax2.set_yticks(ticks)
-        ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
-
-        # Título
-        plt.title('Condições para Renda Desejada', fontweight='bold',fontsize=20)
-
-        # Legendas
-        handles1, labels1 = ax1.get_legend_handles_labels()
-        handles2, labels2 = ax2.get_legend_handles_labels()
-        ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False, fontsize=15)
-
-        # Adicionar caixa de texto com informações adicionais ao lado direito do gráfico
-        info_text = (
-            f"{'RESUMO':^30}\n\n"  # Inserir 'RESUMO' em negrito e centralizado
-            f"Aposentadoria aos {idade_aposentadoria} anos\n\n"
-            f"Reserva Atual\n"
-            f"R$ {reserva:,.0f}\n\n"
-            f"Reserva aos {idade_aposentadoria} anos\n"
-            f"R$ {RDB['Acumula'].max():,.0f}\n\n"
-            f"Poupança até {idade_aposentadoria} anos (P)\n"
-            f"R$ {D5_otimo:,.0f}/mês\n\n"
-            f"Renda INSS (1)\n"
-            f"R$ {inss:,.0f}\n\n"
-            f"Renda Investimento (2)\n"
-            f"R$ {RDB['Complemento'].max():,.0f}\n\n"
-            f"Renda DESEJADA (1)+(2)\n"
-            f"R$ {renda_desejada:,.0f}/mês\n"
-        )
-        plt.gcf().text(1.17, 0.5, info_text, fontsize=15, bbox=dict(facecolor='white', alpha=0.5), transform=ax1.transAxes, verticalalignment='center')
-
-        # Adicionar anotação para a linha verde
-        ax1.annotate(
-            '(1)+(2)',
-            xy=(idade_aposentadoria, renda_desejada),
-            xytext=(idade_aposentadoria + 10, renda_desejada + 200),
-            fontsize=20,
-            ha='center',
-            fontweight='bold'
-        )
-
-        # Adicionar anotação para a curva vermelha
-        ax1.annotate(
-            'P',
-            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, D5_otimo),
-            xytext=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, D5_otimo + 100),
-            #xytext=(idade_aposentadoria - 15, D5_otimo + 100),  # Ajuste aqui para mudar a posição do texto
-            fontsize=20,
-            ha='center',
-            fontweight='bold',
-            color='red'
-        )
-
-        # Adicionar anotação para a curva azul
-        ax2.annotate(
-            '(2)\n',
-            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, max_acumula),
-            xytext=(idade_aposentadoria + (expec_vida - idade_aposentadoria) / 2, max_acumula / 2),  # Ajuste aqui para mudar a posição do texto
-            fontsize=20,
-            ha='center',
-            fontweight='bold',
-            color='black'
-        )
-
-        # Adicionar nota de rodapé
-        fig.text(0.0, -0.05, 'Este gráfico é apenas uma simulação e não deve ser usado como único instrumento para decisões financeiras.\n'
-                            'Consulte um especialista antes de tomar qualquer decisão financeira.', 
-                fontsize=15)
-
-        # Ajustando layout
-        plt.tight_layout(rect=[0, 0, 0.95, 1])
-
-            # Salvar o gráfico em PDF diretamente no buffer
-        img = io.BytesIO()
-        plt.savefig(img, format='png', bbox_inches='tight')
-        img.seek(0)
-        graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
-
-        # Enviar o gráfico codificado para o frontend
-        return render_template('desejada.html', graph_base64=graph_base64)
-
+    return png_file_path
 
 #funcao cria grafico renda possivel
-@app.route('/grafico_renda_possivel', methods=['POST', 'GET'])
-@token_required
-def criar_grafico_rendaPossivel():
-    if request.method == 'POST':
-        idade_inicial = request.form['id_ini']
-        idade_aposentadoria = request.form['id_apos']
-        expec_vida = request.form['id_exp']
-        reserva = request.form['id_reser']
-        inss = request.form['id_inss']
-        poupanca_possivel = request.form['id_poss']
-        ret_invest_anual = request.form['id_tx']
+def criar_grafico2(idade_inicial, idade_aposentadoria, expec_vida, reserva,ret_invest_anual,inss,poupanca_possivel):
+    # Definir as variáveis diretamente
+    #idade_inicial = 40
+    #idade_aposentadoria = 65
+    #expec_vida = 94
+    #reserva = 100000
+    #inss = 3000
+    #poupanca_possivel = 250  # Novo valor definido
+    #ret_invest_anual = 0.05  # 2% anual
+    ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Mensalizando a taxa anual
 
-        if not idade_inicial:
-            return render_template('possivel.html', erro_idade_inicial="Por favor, insira um valor na idade inicial")
+    # Construir a coluna 'idade'
+    idade = np.arange(idade_inicial, expec_vida + 1)
+
+    # Função que calcula o valor futuro (FV) equivalente à fórmula do Excel
+    def FV(rate, nper, pmt):
+        if rate == 0:
+            return pmt * nper
+        return pmt * ((1 + rate) ** nper - 1) / rate
+
+    # Função para calcular a coluna 'Poupanca'
+    def calcular_poupanca(D3, idade, ret_invest_mensal):
+        poupanca = np.zeros_like(idade, dtype=float)
+        for i in range(len(idade)):
+            if idade[i] < idade_aposentadoria:
+                poupanca[i] = FV(ret_invest_mensal, 12, poupanca_possivel)
+            else:
+                poupanca[i] = -FV(ret_invest_mensal, 12, D3)
+        return poupanca
+
+    # Função para calcular a coluna 'Acumula'
+    def calcular_acumula(poupanca, reserva, ret_invest_anual):
+        acumula = np.zeros_like(poupanca, dtype=float)
+        acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
+        for i in range(1, len(poupanca)):
+            acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
+        return acumula
+
+    # Função objetivo para otimização
+    def func_objetivo(D3):
+        poupanca = calcular_poupanca(D3, idade, ret_invest_mensal)
+        acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
+        return abs(acumula[-1])
+
+    # Intervalo de busca para D3
+    d3_min = 0.0
+    d3_max = 1000000
+
+    # Encontrar o valor ótimo de D3
+    D3_otimo = fminbound(func_objetivo, d3_min, d3_max)
+
+    # Calcular as colunas finais usando o valor ótimo de D3
+    salario_final = np.where(idade < idade_aposentadoria, 0, inss + D3_otimo)
+    poupanca_final = calcular_poupanca(D3_otimo, idade, ret_invest_mensal)
+    acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
+
+    # Criar o DataFrame e formatar as colunas com duas casas decimais
+    RDB = pd.DataFrame({
+        'Idade': idade,
+        'Salario': salario_final.round(2),
+        'Complemento': np.where(idade < idade_aposentadoria, 0, D3_otimo).round(2),
+        'Poupanca': poupanca_final.round(2),
+        'Acumula': acumula_final.round(2)
+    })
+
+    # Configurações do gráfico
+    fig, ax1 = plt.subplots(figsize=(13, 7))  # Ajustar o tamanho da figura
+
+    # Eixo X
+    ax1.set_xlim([idade_inicial, expec_vida])
+    ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
+    ax1.set_xlabel('Idade', fontweight='bold',fontsize=15)
+
+    # Eixo Y primário
+    ax1.set_ylim([0, RDB['Salario'].max() + 2000])
+    ax1.set_yticks(np.arange(0, RDB['Salario'].max() + 2000, 1000))
+    ax1.set_ylabel('Renda (R$)', fontweight='bold',fontsize=15)
+    ax1.set_yticklabels([f'R${int(x)}' for x in np.arange(0, RDB['Salario'].max() + 2000, 1000)])
+    #ax1.set_yticklabels([f'R${x},00' for x in np.arange(0, renda_desejada + 2000, 1000)])
+
+    #ticks = np.linspace(0, max_acumula, num=6)
+    #x2.set_yticks(ticks)
+    #ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
+
+    # Plotando a curva de Poupança (pontilhada vermelha)
+    ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
+             [poupanca_possivel] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
+             'r.:', linewidth=2, markersize=8, label='Poupança')
+
+    # Plotando a curva de Renda (tracejada verde)
+    ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
+             [RDB['Salario'].max()] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
+             'g--', linewidth=5, label='Renda')
+
+    # Eixo Y secundário
+    ax2 = ax1.twinx()
+    ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
+    ax2.set_ylabel('Reserva Acumulada Milhares (R$)', fontweight='bold',fontsize=15, labelpad=5)  # Ajuste do labelpad
+
+    # Adicionar linha vertical em grey saindo de 'idade_aposentadoria - 1' até RDB.Acumula.max()
+    max_acumula = RDB['Acumula'].max() / 1000  # Convertendo para milhares
+    ax2.axvline(x=idade_aposentadoria - 1, color='grey', linestyle='--')
+    ax2.plot([idade_aposentadoria - 1, idade_aposentadoria - 1], [0, max_acumula], color='grey', linestyle='--')
+
+    # Formatar os rótulos do eixo Y secundário
+    ticks = np.linspace(0, max_acumula, num=6)
+    ax2.set_yticks(ticks)
+    ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
+
+    # Título
+    plt.title('Condições para Renda Possivel', fontweight='bold',fontsize=20)
+
+    # Legendas
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False, fontsize=15)
+
+    # Adicionar caixa de texto com informações adicionais ao lado direito do gráfico
+    info_text = (
+        f"{'RESUMO':^30}\n\n"  # Inserir 'RESUMO' em negrito e centralizado
+        f"Aposentadoria aos {idade_aposentadoria} anos\n\n"
+        f"Reserva Atual\n"
+        f"R$ {reserva:,.0f}\n\n"
+        f"Reserva aos {idade_aposentadoria} anos\n"
+        f"R$ {RDB['Acumula'].max():,.0f}\n\n"
+        f"Poupança ate {idade_aposentadoria} anos (P)\n"
+        f"R$ {poupanca_possivel:,.0f}/mes\n\n"
+        f"Renda INSS (1)\n"
+        f"R$ {inss:,.0f}\n\n"
+        f"Renda Investimento (2)\n"
+        f"R$ {RDB['Complemento'].max():,.0f}\n\n"
+        f"Renda POSSIVEL (1)+(2)\n"
+        f"R$ {RDB['Salario'].max():,.0f}/mes\n"
+    )
+    plt.gcf().text(1.17, 0.5, info_text, fontsize=15, bbox=dict(facecolor='white', alpha=0.5), transform=ax1.transAxes, verticalalignment='center')
+    #plt.gcf().text(1.18, 0.5
+
+    # Adicionar anotação para a linha verde
+    ax1.annotate(
+        '(1)+(2)',
+        xy=(idade_aposentadoria, RDB['Salario'].max()),
+        xytext=(idade_aposentadoria + 10, RDB['Salario'].max() +200),
+        fontsize=20,
+        ha='center',
+        fontweight='bold'
+    )
+    #arrowprops=dict(facecolor='red', shrink=0.05)
+
+    # Adicionar anotação para a curva vermelha
+    ax1.annotate(
+        'P',
+        xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, poupanca_possivel),
+        xytext=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, poupanca_possivel + 100),  # Ajuste aqui para mudar a posição do texto
+        fontsize=20,
+        ha='center',
+        fontweight='bold',
+        color='red'
+    )
+
+    # Adicionar anotação para a curva azul
+    ax2.annotate(
+        '(2)\n',
+        xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, max_acumula),
+        xytext=(idade_aposentadoria + (expec_vida-idade_aposentadoria)/2, max_acumula/ 2),  # Ajuste aqui para mudar a posição do texto
+        fontsize=20,
+        ha='center',
+        fontweight='bold',
+        color='black'
+    )
+
+    # Adicionar nota de rodapé
+    fig.text(0.0,-0.05, 'Este gráfico é apenas uma simulação e não deve ser usado como único instrumento para decisões financeiras.\n'
+                        'Consulte um especialista antes de tomar qualquer decisão financeira.', 
+              fontsize=15)
+
+    # Ajustando layout
+    plt.tight_layout(rect=[0, 0, 0.95, 1])
+
+    # Salvar o gráfico em um arquivo
+    png_file_path = fr'F:\PYTHON T1\CNIS\RNDPossivel.png'
+    plt.savefig(png_file_path, bbox_inches='tight')
+    pdf_file_path = fr'F:\PYTHON T1\CNIS\RND.pdf'
+    plt.savefig(pdf_file_path, bbox_inches='tight')
+
+    return png_file_path
+
+
+# In[ ]:
+
+
+#DASH
+
+#grafico com botoes de idade e esc0lha de porta automatica
+#acrescentando reserva
+#acrescentando taxa investimento
+#acresc inss
+#rendda desejada
+#renda possivel
+#salario bruto
+#abre pdf inss
+#abre pdf grafico rendas
+#abre caixa para uploud de pdf
+#verifica pdf do cnis
+#abre arquivo pdf exemplo
+
+import os
+import base64
+import dash
+import dash_bootstrap_components as dbc
+from dash import dcc, html, Input, Output, State, dash_table
+import pandas as pd
+from flask import send_file
+from werkzeug.utils import secure_filename
+
+# Supondo que criar_grafico, criar_grafico2 e criar_relat_pdf estejam definidos acima
+
+# Inicializar o aplicativo Dash
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+# Layout do aplicativo
+app.layout = dbc.Container([
+    dbc.Row([
+        dbc.Col(html.H1("PLANEJE RENDA FUTURA: INSS, Desejada&Possível"), className="mb-2")
+    ]),
+    dbc.Row([
+        dbc.Col(html.H6(children='Planeje&Calcule sua Renda Futura em 2 Etapas'), className="mb-0")
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='Em duas etapas descubra sua Renda Futura resultado da soma do seu esforço \
+        de poupanca E do seu Benefício de Aposentadoria !',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '2px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='Na primeira etapa verifique o valor do Beneficio de Aposentadoria com as contribuições realizadas ao INSS de forma simples e rápida ! Acesse tambem relatório completo sobre sua situação previdenciária !',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '2px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='Na segunda etapa verifique qual Renda Futura é possível E o esforço de poupança a realizar! Verifique também como o Beneficio Aposentadoria auxilia a chegar à Renda Futura E como impacta facilitando no esforço de poupança !',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '10px'}))
+    ]),
+    html.Div(style={'borderBottom': '5px solid orangered', 'marginBottom': '10px'}),  #linha orangered
+    dbc.Row([
+        dbc.Col(html.P(children='1 - CALCULE RENDA de APOSENTADORIA pelo INSS'),style={'font-size': '20px','font-weight': 'bold'}, className="mb-0")
+    ]),
+    html.Div(style={'borderBottom': '5px solid orangered', 'marginBottom': '10px'}),  #linha orangered
+    dbc.Row([
+        dbc.Col(html.P(
+        children='DESCUBRA NESTA ETAPA o valor de seu Benefício de Aposentadoria do INSS em diferentes alternativas !',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='Calculo pela EC103/19 para trabalhador urbano no RGPS em 5 principais regras: Idade, 50%, 100%, Pontos, Progressiva',
+        style={'font-size': '14px', 'margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='- Carregue o arquivo CNIS no formato PDF para o calculo clicando abaixo no botão "Clique&Selecione Arquivo CNIS"',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='- Arquivo CNIS é obtido no aplicativo "Meu INSS" ou no site www.meu.inss.gov.br',
+        style={'font-size': '14px', 'margin-top': '0px','margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='- Indique o Salario Bruto que será referência para simular o Benefício do INSS',
+        style={'font-size': '14px', 'margin-top': '0px','margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(children=['Clique ', 
+            html.A('AQUI', href='/download_example_pdf', target='_blank'), 
+            ' e veja exemplo completo do "Relatório de Análise do CNIS" que obtem ao "Calcular Benefício"'],
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '10px'}))
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div([
+                html.Label('Sexo:', style={'font-weight': 'bold', 'margin-right': '10px'}),
+                dcc.Dropdown(
+                    id='id_sx',
+                    options=[
+                        {'label': 'FEM', 'value': 0},
+                        {'label': 'MASC', 'value': 1}
+                    ],
+                    placeholder='Selecione o sexo',
+                    style={'width': '100px', 'margin-right': '20px'}
+                ),
+                html.Label('Salário Bruto Atual (R$):', style={'font-weight': 'bold', 'margin-right': '10px'}),
+                dcc.Input(id='id_slbr', type='number', min=0,value=0, step=1, style={'width': '100px', 'margin-right': '20px'}),
+                html.Button('Calcular Beneficio INSS', id='submit-button3', n_clicks=0, style={'width': '200px'})
+            ], style={'display': 'flex', 'align-items': 'center'}),
+            html.Div(id='error-message3', style={'color': 'red', 'margin-top': '10px'}),
+            html.Div(id='relatorio-output', style={'margin-top': '10px'})
+        ], width=12),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            # Novo componente de upload de arquivo
+            dcc.Upload(
+                id='upload-pdf',
+                children=html.Div(['Clique&Selecione Arquivo CNIS']),
+                style={
+                    'width': '35%',
+                    'height': '25px',
+                    'lineHeight': '20px',
+                    'borderWidth': '2px',
+                    'borderStyle': 'dashed',
+                    'font-weight': 'bold',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                    'margin': '10px auto',
+                    'backgroundColor': 'lightgray'
+                },
+                multiple=False
+            ),
+            html.Div(id='upload-output')
+        ], width=12)
+    ]),
+    html.Div(style={'borderBottom': '5px solid orangered', 'marginBottom': '10px'}), 
+    dbc.Row([
+        dbc.Col(html.P(children='2 - CALCULE RENDA DESEJADA&POSSÍVEL FUTURA'),style={'font-size': '20px','font-weight': 'bold'}, className="mb-0")
+    ]),
+    html.Div(style={'borderBottom': '5px solid orangered', 'marginBottom': '10px'}),  
+    dbc.Row([
+        dbc.Col(html.P(
+        children='EXERCITE & SIMULE NESTA ETAPA Rendas Futuras para diferentes cenários, situações, condições alterando os campos abaixo !',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='- Informe a Renda Desejada mensal na aposentadoria e veja a Poupança Necessária HOJE',
+        style={'font-size': '14px', 'margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='- Informe sua Poupança possível mensal HOJE e veja a Renda Possível mensal na aposentadoria',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children=['- Informe seu Benefício do INSS',html.B(' (Etapa 1) '),'e veja IMPACTO no esforço da poupança mensal HOJE e obtenção da Renda Futura !'],
+        style={'font-size': '14px', 'margin-top': '0px','margin-bottom': '0px'}))
+    ]),
+    dbc.Row([
+        dbc.Col(html.P(
+        children='- Informe a taxa real (descontada inflação) ano de juros que remunera sua poupança e reserva financeira',
+        style={'font-size': '14px', 'margin-top': '0px', 'margin-bottom': '10px'}))
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Label('Idade Atual:', style={'font-weight': 'bold'}),
+            dcc.Input(id='id_ini', type='number', min=15, max=100, value=25, step=1, style={'width': '50px'})
+        ], width=3),
+        dbc.Col([
+            html.Label('Idade Aposentadoria:', style={'font-weight': 'bold'}),
+            dcc.Input(id='id_apos', type='number', min=15, max=120, value=65, step=1, style={'width': '50px'})
+        ], width=4),
+        dbc.Col([
+            html.Label('Expectativa de Vida:', style={'font-weight': 'bold'}),
+            dcc.Input(id='id_exp', type='number', min=15, max=150, value=85, step=1, style={'width': '50px'})
+        ], width=4),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Label('Reserva Financeira Atual (R$):', style={'font-weight': 'bold'}),
+            dcc.Input(id='id_reser', type='number', min=0, value=1000, step=1, style={'width': '85px'})
+        ], width=6),
+        dbc.Col([
+            html.Label('Taxa real ano (%):', style={'font-weight': 'bold'}),
+            dcc.Input(id='id_tx', type='number', min=0.1, value=4, step=0.1, style={'width': '50px'})
+        ], width=4),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Label('Benefício Esperado INSS (R$):', style={'font-weight': 'bold'}),
+            dcc.Input(id='id_inss', type='number', min=0, value=0, step=1, style={'width': '70px', 'margin-top': '5px'})
+        ], width=4.5),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div([
+                html.Label('Renda Mensal DESEJADA (R$):', style={'font-weight': 'bold', 'margin-right': '0px'}),
+                dcc.Input(id='id_dese', type='number', min=0, value=1000, step=1, style={'width': '65px', 'margin-right': '30px', 'margin-top': '5px'}),
+                html.Button('Condição p/ Renda Desejada', id='submit-button', n_clicks=0, style={'width': '250px', 'margin-top': '5px'})
+            ], style={'display': 'flex', 'align-items': 'center'}),
+        ], width=9),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div([
+                html.Label('Poupança Mensal POSSÍVEL (R$):', style={'font-weight': 'bold', 'margin-right': '5px'}),
+                dcc.Input(id='id_poss', type='number', min=0, value=100, step=1, style={'width': '65px', 'margin-right': '5px', 'margin-top': '5px'}),
+                html.Button('Condição p/ Renda Possível', id='submit-button2', n_clicks=0, style={'width': '250px', 'margin-top': '5px'})
+            ], style={'display': 'flex', 'align-items': 'center'}),
+            html.Div(id='error-message2', style={'color': 'red', 'margin-top': '5px'})
+        ], width=9),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            # Div para imagem e link
+            html.Div([
+                html.Img(id='grafico-img', style={'width': '100%', 'margin-top': '20px'}),
+                # Novo link abaixo da imagem
+                #html.A('Abrir Resultado da Simulação', href='/download_graph_pdf', target="_blank", style={'display': 'block', 'margin-top': '10px'})
+                html.A('Clique AQUI para abrir Gráfico acima no formado pdf.', id='pdf-link', href='/download_graph_pdf', target="_blank", style={'display': 'none', 'margin-top': '10px'})
+            ])
+        ])
+    ]),
+], fluid=True)
+# Callback para atualizar a imagem do gráfico e validar os campos
+@app.callback(
+    [Output('grafico-img', 'src'), Output('pdf-link', 'style'), Output('error-message2', 'children')],
+    [Input('submit-button', 'n_clicks'), Input('submit-button2', 'n_clicks')],
+    [State('id_ini', 'value'), State('id_apos', 'value'), State('id_exp', 'value'), State('id_reser', 'value'),
+     State('id_tx', 'value'), State('id_inss', 'value'), State('id_dese', 'value'), State('id_poss', 'value')]
+)
+
+def update_output(n_clicks1, n_clicks2, idade_inicial, idade_aposentadoria, expec_vida, reserva, rentabilidade, inss, renda_desejada, poupanca_possivel):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return None, {'display': 'none'}, ''
+    button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if idade_inicial is None:
+        return None, {'display': 'none'}, 'Idade Atual mínima permitida é 15 anos E sem casas decimais (exemplos: 19 ou 25 ou 49 etc...)! Digite outro valor...!'
+    if idade_aposentadoria is None or idade_aposentadoria <= idade_inicial:
+        return None,{'display': 'none'}, 'Digite um valor maior que a Idade Atual para a Idade Aposentadoria E sem casas decimais (exemplos: 69 ou 75 ou 89 etc...).'
+    if expec_vida is None or expec_vida <= idade_inicial or expec_vida <= idade_aposentadoria:
+        return None,{'display': 'none'}, 'Digite um valor maior que da Idade Atual e da Idade de Aposentadoria para a Expectativa de Vida E sem casas decimais (exemplos: 99 ou 95 ou 79 etc...).'
+    if reserva is None or reserva < 0:
+        return None,{'display': 'none'}, 'Digite um valor inteiro maior ou igual a zero E sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...) para Reserva Financeira.'
+    if rentabilidade is None or rentabilidade <= 0:
+        return None,{'display': 'none'}, 'Digite um valor maior que zero E com no maximo uma casa decimal (exemplos: 4.9 ou 3.2 etc...)para a Taxa Real.'
+    if inss is None or inss < 0:
+        return None,{'display': 'none'}, 'Digite um valor maior ou igual a zero E sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...) para Benefício INSS.'
+    if renda_desejada is None or renda_desejada < 0:
+        return None,{'display': 'none'}, 'Digite um valor maior ou igual a zero E sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...) para Renda Mensal DESEJADA.'
+    if poupanca_possivel is None or poupanca_possivel < 0:
+        return None,{'display': 'none'}, 'Digite um valor maior ou igual a zero E sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...) para Poupança Mensal POSSÍVEL.'
+
+    rentabilidade_anual = rentabilidade / 100  # Ajuste da rentabilidade para a função
+
+    if button_id == 'submit-button':
+        png_file_path = criar_grafico(idade_inicial, idade_aposentadoria, expec_vida, reserva, rentabilidade_anual, inss, renda_desejada)
+    elif button_id == 'submit-button2':
+        png_file_path = criar_grafico2(idade_inicial, idade_aposentadoria, expec_vida, reserva, rentabilidade_anual, inss, poupanca_possivel)
+
+    # Converter o caminho da imagem para um formato que o Dash possa exibir
+    encoded_image = base64.b64encode(open(png_file_path, 'rb').read()).decode('utf-8')
+    src_data = 'data:image/png;base64,' + encoded_image
+
+    return src_data, {'display': 'block', 'margin-top': '10px'}, ''
+
+# abre o PDF exemplo usando o Flask
+import flask
+@app.server.route('/download_example_pdf')
+def download_example_pdf():
+    return flask.send_file('F:\\PYTHON T1\\CNIS\\EXEMPLO.pdf', as_attachment=False)
+
+# Servir o PDF usando o Flask
+@app.server.route('/download_pdf')
+def download_pdf():
+    pdf_path = r'F:\PYTHON T1\CNIS\RelatInss.pdf'
+    if os.path.exists(pdf_path):
+        return send_file(pdf_path, as_attachment=False)  # Serve o PDF sem forçar download
+    else:
+        return "Arquivo PDF não encontrado."
+
+# Nova rota para servir o PDF do gráfico
+@app.server.route('/download_graph_pdf')
+def download_graph_pdf():
+    pdf_path = r'F:\PYTHON T1\CNIS\RND.pdf'
+    if os.path.exists(pdf_path):
+        return send_file(pdf_path, as_attachment=False)  # Serve o PDF sem forçar download
+    else:
+        return "Arquivo PDF não encontrado."
+# Callback para gerar relatório PDF com os dados do usuário e exibir o link para abri-lo
+@app.callback(
+    [Output('relatorio-output', 'children'), Output('error-message3', 'children')],
+    [Input('submit-button3', 'n_clicks')],
+    [State('id_sx', 'value'), State('id_slbr', 'value')]
+)
+
+def gerar_relatorio(n_clicks3, sx, slbr):
+    cnis_path = r'F:\PYTHON T1\CNIS\CNIS.pdf'
+    if n_clicks3 > 0:
+        # Verifica se o arquivo CNIS.pdf existe no caminho especificado
+        if not os.path.exists(cnis_path):
+            return '', 'Para o Calculo do Benefício Selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo !'
+        if verifica_cnis() != 3:
+            return '', 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
+        if sx is None:
+            return None, 'Preencher sexo e clique novamente em "Calcular Beneficio INSS" e aguarde...!'
+        if slbr is None or slbr < 0:
+            return None, 'Preencha Salário Bruto um valor inteiro, maior ou igual a zero E sem casas decimais (exemplos: 1000 ou 2500 ou 4987 etc...)! clique novamente em "Calculo Beneficio INSS" E aguarde...!'
+        #loading_message = 'Aguarde, cálculo sendo executado!'
         
-        idade_inicial = int(idade_inicial)
-
-        if not idade_aposentadoria:
-            return render_template('possivel.html', erro_idade_aposentadoria="Por favor, insira um valor na idade de aposentadoria")
-
-        idade_aposentadoria = int(idade_aposentadoria)
-
-        if not expec_vida:
-            return render_template('possivel.html', erro_expectativa="Por favor, insira um valor na expectativa de vida")
+        ATNTV = criar_relat_pdf(sx, slbr)
+        df = pd.DataFrame(ATNTV)
         
-        expec_vida = int(expec_vida)
-
-        if not reserva:
-            return render_template('possivel.html', erro_expectativa="Por favor, insira um valor na Reserva")
-        
-        reserva = float(reserva)
-
-        if not inss:
-            return render_template('possivel.html', erro_beneficio="Por favor, insira um valor válido no Inss")
-        
-        inss = float(inss)
-
-        if not poupanca_possivel:
-            return render_template('possivel.html', erro_poupanca="Por favor, insira um valor na poupança")
-        poupanca_possivel = float(poupanca_possivel)
-
-        if not ret_invest_anual:
-            return render_template('possivel.html', erro_anual="Por favor, insira um valor valido no investimento anual")
-
-
-        # Validações
-        erro_idade_inicial = validar_idade_inicial(idade_inicial)
-        erro_idade_aposentadoria = validar_idade_aposentadoria(idade_aposentadoria, idade_inicial, expec_vida)
-        erro_expectativa = validar_expectativa(expec_vida, idade_aposentadoria)
-        erro_reserva = validar_reserva_financeira(reserva)
-        erro_taxa = validar_taxa_real(ret_invest_anual)
-        erro_beneficio = validar_beneficio_inss(inss)
-        erro_poupanca = validar_poupanca_mensal(poupanca_possivel)
-
-        if erro_idade_inicial or erro_idade_aposentadoria or erro_expectativa or erro_reserva or erro_taxa or erro_beneficio or erro_poupanca:
-            return render_template('possivel.html', 
-                                   erro_idade_inicial=erro_idade_inicial, 
-                                   erro_idade_aposentadoria=erro_idade_aposentadoria, 
-                                   erro_expectativa=erro_expectativa, 
-                                   erro_reserva=erro_reserva, 
-                                   erro_taxa=erro_taxa, 
-                                   erro_beneficio=erro_beneficio, 
-                                   erro_poupanca=erro_poupanca)
-
-        # Convertendo as entradas válidas para o tipo correto
-        idade_inicial = int(idade_inicial)
-        idade_aposentadoria = int(idade_aposentadoria)
-        expec_vida = int(expec_vida)
-        reserva = float(reserva)
-        inss = float(inss)
-        poupanca_possivel = float(poupanca_possivel)
-        ret_invest_anual = float(ret_invest_anual) / 100
-        ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1 
-
-        # Construir a coluna 'idade'
-        idade = np.arange(idade_inicial, expec_vida + 1)
-
-        # Função que calcula o valor futuro (FV) equivalente à fórmula do Excel
-        def FV(rate, nper, pmt):
-            if rate == 0:
-                return pmt * nper
-            return pmt * ((1 + rate) ** nper - 1) / rate
-
-        # Função para calcular a coluna 'Poupanca'
-        def calcular_poupanca(D3, idade, ret_invest_mensal):
-            poupanca = np.zeros_like(idade, dtype=float)
-            for i in range(len(idade)):
-                if idade[i] < idade_aposentadoria:
-                    poupanca[i] = FV(ret_invest_mensal, 12, poupanca_possivel)
-                else:
-                    poupanca[i] = -FV(ret_invest_mensal, 12, D3)
-            return poupanca
-
-        # Função para calcular a coluna 'Acumula'
-        def calcular_acumula(poupanca, reserva, ret_invest_anual):
-            acumula = np.zeros_like(poupanca, dtype=float)
-            acumula[0] = poupanca[0] + reserva * (1 + ret_invest_anual)
-            for i in range(1, len(poupanca)):
-                acumula[i] = acumula[i - 1] * (1 + ret_invest_anual) + poupanca[i]
-            return acumula
-
-        # Função objetivo para otimização
-        def func_objetivo(D3):
-            poupanca = calcular_poupanca(D3, idade, ret_invest_mensal)
-            acumula = calcular_acumula(poupanca, reserva, ret_invest_anual)
-            return abs(acumula[-1])
-
-        # Intervalo de busca para D3
-        d3_min = 0.0
-        d3_max = 1000000
-
-        # Encontrar o valor ótimo de D3
-        D3_otimo = fminbound(func_objetivo, d3_min, d3_max)
-
-        # Calcular as colunas finais usando o valor ótimo de D3
-        salario_final = np.where(idade < idade_aposentadoria, 0, inss + D3_otimo)
-        poupanca_final = calcular_poupanca(D3_otimo, idade, ret_invest_mensal)
-        acumula_final = calcular_acumula(poupanca_final, reserva, ret_invest_anual)
-
-        # Criar o DataFrame e formatar as colunas com duas casas decimais
-        RDB = pd.DataFrame({
-            'Idade': idade,
-            'Salario': salario_final.round(2),
-            'Complemento': np.where(idade < idade_aposentadoria, 0, D3_otimo).round(2),
-            'Poupanca': poupanca_final.round(2),
-            'Acumula': acumula_final.round(2)
-        })
-
-        # Configurações do gráfico
-        fig, ax1 = plt.subplots(figsize=(13, 7))  # Ajustar o tamanho da figura
-
-        # Eixo X
-        ax1.set_xlim([idade_inicial, expec_vida])
-        ax1.set_xticks(np.arange(idade_inicial, expec_vida + 1, 5))
-        ax1.set_xlabel('Idade', fontweight='bold',fontsize=15)
-
-        # Eixo Y primário
-        ax1.set_ylim([0, RDB['Salario'].max() + 2000])
-        ax1.set_yticks(np.arange(0, RDB['Salario'].max() + 2000, 1000))
-        ax1.set_ylabel('Renda (R$)', fontweight='bold',fontsize=15)
-        ax1.set_yticklabels([f'R${int(x)}' for x in np.arange(0, RDB['Salario'].max() + 2000, 1000)])
-        #ax1.set_yticklabels([f'R${x},00' for x in np.arange(0, renda_desejada + 2000, 1000)])
-
-        #ticks = np.linspace(0, max_acumula, num=6)
-        #x2.set_yticks(ticks)
-        #ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
-
-        # Plotando a curva de Poupança (pontilhada vermelha)
-        ax1.plot(RDB['Idade'][RDB['Idade'] < idade_aposentadoria], 
-                [poupanca_possivel] * len(RDB['Idade'][RDB['Idade'] < idade_aposentadoria]), 
-                'r.:', linewidth=2, markersize=8, label='Poupança')
-
-        # Plotando a curva de Renda (tracejada verde)
-        ax1.plot(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)], 
-                [RDB['Salario'].max()] * len(RDB['Idade'][(RDB['Idade'] >= idade_aposentadoria - 1) & (RDB['Idade'] <= expec_vida)]), 
-                'g--', linewidth=5, label='Renda')
-
-        # Eixo Y secundário
-        ax2 = ax1.twinx()
-        ax2.plot(RDB['Idade'], RDB['Acumula'] / 1000, 'b-', linewidth=5, label='Reserva Acumulada')
-        ax2.set_ylabel('Reserva Acumulada Milhares (R$)', fontweight='bold',fontsize=15, labelpad=5)  # Ajuste do labelpad
-
-        # Adicionar linha vertical em grey saindo de 'idade_aposentadoria - 1' até RDB.Acumula.max()
-        max_acumula = RDB['Acumula'].max() / 1000  # Convertendo para milhares
-        ax2.axvline(x=idade_aposentadoria - 1, color='grey', linestyle='--')
-        ax2.plot([idade_aposentadoria - 1, idade_aposentadoria - 1], [0, max_acumula], color='grey', linestyle='--')
-
-        # Formatar os rótulos do eixo Y secundário
-        ticks = np.linspace(0, max_acumula, num=6)
-        ax2.set_yticks(ticks)
-        ax2.set_yticklabels([f'R${int(x)}000,00' for x in ticks])
-
-        # Título
-        plt.title('Condições para Renda Possivel', fontweight='bold',fontsize=20)
-
-        # Legendas
-        handles1, labels1 = ax1.get_legend_handles_labels()
-        handles2, labels2 = ax2.get_legend_handles_labels()
-        ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False, fontsize=15)
-
-        # Adicionar caixa de texto com informações adicionais ao lado direito do gráfico
-        info_text = (
-            f"{'RESUMO':^30}\n\n"  # Inserir 'RESUMO' em negrito e centralizado
-            f"Aposentadoria aos {idade_aposentadoria} anos\n\n"
-            f"Reserva Atual\n"
-            f"R$ {reserva:,.0f}\n\n"
-            f"Reserva aos {idade_aposentadoria} anos\n"
-            f"R$ {RDB['Acumula'].max():,.0f}\n\n"
-            f"Poupança ate {idade_aposentadoria} anos (P)\n"
-            f"R$ {poupanca_possivel:,.0f}/mes\n\n"
-            f"Renda INSS (1)\n"
-            f"R$ {inss:,.0f}\n\n"
-            f"Renda Investimento (2)\n"
-            f"R$ {RDB['Complemento'].max():,.0f}\n\n"
-            f"Renda POSSIVEL (1)+(2)\n"
-            f"R$ {RDB['Salario'].max():,.0f}/mes\n"
+        table = dash_table.DataTable(
+            columns=[{"name": i, "id": i} for i in df.columns],
+            data=df.to_dict('records'),
+            style_table={'overflowX': 'auto'},
+            style_cell={'textAlign': 'left', 'padding': '5px'},
+            style_header={'backgroundColor': 'white', 'fontWeight': 'bold'}
         )
-        plt.gcf().text(1.17, 0.5, info_text, fontsize=15, bbox=dict(facecolor='white', alpha=0.5), transform=ax1.transAxes, verticalalignment='center')
-        #plt.gcf().text(1.18, 0.5
-
-        # Adicionar anotação para a linha verde
-        ax1.annotate(
-            '(1)+(2)',
-            xy=(idade_aposentadoria, RDB['Salario'].max()),
-            xytext=(idade_aposentadoria + 10, RDB['Salario'].max() +200),
-            fontsize=20,
-            ha='center',
-            fontweight='bold'
-        )
-        #arrowprops=dict(facecolor='red', shrink=0.05)
-
-        # Adicionar anotação para a curva vermelha
-        ax1.annotate(
-            'P',
-            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, poupanca_possivel),
-            xytext=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, poupanca_possivel + 100),  # Ajuste aqui para mudar a posição do texto
-            fontsize=20,
-            ha='center',
-            fontweight='bold',
-            color='red'
-        )
-
-        # Adicionar anotação para a curva azul
-        ax2.annotate(
-            '(2)\n',
-            xy=(idade_inicial + (idade_aposentadoria - idade_inicial) / 2, max_acumula),
-            xytext=(idade_aposentadoria + (expec_vida-idade_aposentadoria)/2, max_acumula/ 2),  # Ajuste aqui para mudar a posição do texto
-            fontsize=20,
-            ha='center',
-            fontweight='bold',
-            color='black'
-        )
-
-        # Adicionar nota de rodapé
-        fig.text(0.0,-0.05, 'Este gráfico é apenas uma simulação e não deve ser usado como único instrumento para decisões financeiras.\n'
-                            'Consulte um especialista antes de tomar qualquer decisão financeira.', 
-                fontsize=15)
-
-        # Ajustando layout
-        plt.tight_layout(rect=[0, 0, 0.95, 1])
-
-        img = io.BytesIO()
-        plt.savefig(img, format='png', bbox_inches='tight')
-        img.seek(0)
-        graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
-
-        # Enviar o gráfico codificado para o frontend
-        return render_template('possivel.html', graph_base64=graph_base64)
-
-    return render_template('possivel.html')
-
-
-@app.route('/gerar_relatorio', methods=['POST'])
-@token_required
-def gerar_relatorio():
-    try:
-        cnis_file = request.files['cnis_file']
-        # Construa o caminho absoluto para o arquivo CNIS.pdf
-        cnis_buffer = BytesIO()
-        cnis_file.save(cnis_buffer)
-        cnis_buffer.seek(0)
-        n_clicks3 = 0
-
-        sx = request.form['sexo']
-        salario_bruto = request.form['salario_bruto']
-        button = request.form['submit-button']
-
-        print(sx)
-        print(salario_bruto)
-
-        if not sx:
-            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade')
-
-        # Verificações para o campo salario_bruto
-        if not salario_bruto:  # Verifica se o campo está vazio
-            error_salario = 'Digite um número inteiro maior ou igual a zero.'
-            return render_template('calculadora.html', error_salario=error_salario)
-
-        if not salario_bruto.isdigit():  # Verifica se contém apenas números inteiros positivos
-            error_salario = 'Digite um número inteiro maior ou igual a zero.'
-            return render_template('calculadora.html', error_salario=error_salario)
-
-        slbr = int(salario_bruto)
-
-        if slbr < 0:  # Verifica se o número é negativo
-            error_salario = 'Digite um número inteiro maior ou igual a zero.'
-            return render_template('calculadora.html', error_salario=error_salario)
-
-        if n_clicks3 >= 0:
-            # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
-            if cnis_buffer.getbuffer().nbytes == 0:
-                error = 'Para o Cálculo do Benefício, selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo!'
-                return render_template('calculadora.html', error=error)
-
-            if verifica_cnis(cnis_buffer) != 3:
-                error = 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
-                return render_template('calculadora.html', error=error)
-
-            if sx is None:
-                error = 'Preencher sexo e clique novamente em "Calcular Benefício INSS" e aguarde...!'
-                return render_template('calculadora.html', error=error)
-
-            pdf, atntv_html = criar_relat_pdf(sx, slbr, cnis_buffer)
-
-            if button == '2':
-                # Se for para baixar o PDF, retorna o arquivo
-                return send_file(pdf, as_attachment=True, download_name='RelatInss.pdf')
-                        
-            # Passa a tabela HTML para o template `calculadora.html`
-            return render_template('calculadora.html', atntv=atntv_html, pdf=pdf)
-
-    except Exception as e:
-        app.logger.error(f"Error occurred: {str(e)}")
-        error = 'Ocorreu um erro ao tentar gerar seu PDF, por favor, verifique seu CNIS.'
-        return render_template('calculadora.html', error=error)
-
-
-def send_email(name, email, password):
-    msg = Message('Seus Dados de Acesso', recipients=[email])
-    msg.html = f'''
-    <html>
-    <body>
-        <p>Olá <strong>{name}</strong>,</p>
         
-        <p>Obrigado por sua compra! Aqui estão seus dados de acesso:</p>
-        <p><strong>Email:</strong> {email}<br>
-        <strong>Senha:</strong> {password}</p>
+        # Adicionando o link diretamente após a tabela para abrir o PDF via servidor
+        link = html.A('Clique aqui para visualizar "Relatório Completo de Análise do CNIS" no formato pdf.', href='/download_pdf', target="_blank", style={'display': 'block', 'margin-top': '10px'})
+        
+        return html.Div([
+            dcc.Markdown("### Alternativas de Aposentadoria com Informações do CNIS"),
+            table,
+            link
+        ]), ''
+    # Garantir que a função sempre retorne uma tupla
+    return '', ''
+# Callback para salvar o PDF e gerar a saída desejada
+@app.callback(
+    Output('upload-output', 'children'),
+    [Input('upload-pdf', 'contents')],
+    [State('upload-pdf', 'filename')]
+)
+def save_uploaded_file(contents, filename):
+    if contents is not None:
+        # Verifica se o arquivo é um PDF
+        if not filename.lower().endswith('.pdf'):
+            return html.Div('O arquivo CNIS tem que ser do tipo PDF, verifique e carregue novamente...!',
+                            style={'color': 'red', 'font-weight': 'bold'})
+            #return 'O arquivo selecionado tem que ser do tipo PDF.'
 
-        <p>Por favor, faça login no sistema e altere sua senha no primeiro acesso.</p>
+        # Decodifica o conteúdo do arquivo
+        content_type, content_string = contents.split(',')
+        decoded = base64.b64decode(content_string)
+        
+        # Salva o arquivo no caminho especificado
+        filepath = os.path.join('F:\\PYTHON T1\\CNIS', 'CNIS.pdf')
+        with open(filepath, 'wb') as f:
+            f.write(decoded)
 
-        <!-- Links para a plataforma -->
-        <p>Acesse a plataforma:</p>
-        <p><a href="https://app.guiarendaprevidencia.com.br/login">Login: https://app.guiarendaprevidencia.com.br/login</a></p>
-        <p><a href="https://app.guiarendaprevidencia.com.br/forgotPassword">Refazer a Senha: https://app.guiarendaprevidencia.com.br/forgotPassword</a></p>
-
-        <p>Atenciosamente,<br>
-        <strong>Sua Equipe</strong></p>
-    </body>
-    </html>
-    '''
-    mail.send(msg)
-
-# Função de registro para o webhook
-def register_via_webhook(name, email, password):
-    hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-
-    user = User.query.filter_by(email=email).first()
-
-    if user:
-        return {"status": "erro", "message": "Usuário já registrado"}
-
-    new_user = User(name=name, email=email, password=hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
-
-    send_email(name, email, password)
-
-    return {"status": "sucesso", "message": "Usuário registrado e email enviado"}
-
-# Rota do webhook que registra e envia o email
-@app.route('/compra-realizada', methods=['POST'])
-def webhook():
-    data = request.json
+        #return f'Arquivo {filename} carregado e salvo em {filepath}'
+        return f'Arquivo "{filename}" carregado! Continue "Calcular Benefício INSS"...!'
     
-    # Extraindo nome e email do cliente
-    customer_name = data.get('Customer', {}).get('full_name')
-    customer_email = data.get('Customer', {}).get('email')
-
-    # Gerando uma senha aleatória
-    password = 'pwdXhy'
-
-    # Registrando o usuário e enviando o email
-    response = register_via_webhook(customer_name, customer_email, password)
-    
-    return jsonify(response), 200
-
-def validar_idade_inicial(idade_inicial):
-    try:
-        idade_inicial = int(idade_inicial)
-        if idade_inicial < 15 or idade_inicial > 100:
-            return "Digite um número inteiro entre 15 e 100 para a idade inicial"
-    except ValueError:
-        return "Digite um número inteiro válido para a idade inicial"
-    return None
-
-def validar_idade_aposentadoria(idade_aposentadoria, idade_inicial, expec_vida):
-    try:
-        idade_aposentadoria = int(idade_aposentadoria)
-        if idade_aposentadoria < 15 or idade_aposentadoria > 120 or idade_aposentadoria <= idade_inicial:
-            return "Digite um número inteiro maior que a idade atual para aposentadoria"
-    except ValueError:
-        return "Digite um número inteiro válido para a idade de aposentadoria"
-    return None
-
-def validar_expectativa(expec_vida, idade_aposentadoria):
-    try:
-        expec_vida = int(expec_vida)
-        if expec_vida < 15 or expec_vida > 150 or expec_vida <= idade_aposentadoria:
-            return "Digite um número inteiro maior que a idade de aposentadoria para a expectativa de vida"
-    except ValueError:
-        return "Digite um número inteiro válido para a expectativa de vida"
-    return None
-
-def validar_reserva_financeira(reserva):
-    try:
-        reserva = float(reserva)
-        if reserva < 0:
-            return "Digite um número maior ou igual a zero para a reserva financeira"
-    except ValueError:
-        return "Digite um número válido para a reserva financeira"
-    return None
-
-def validar_taxa_real(taxa_real):
-    try:
-        taxa_real = float(taxa_real)
-        if taxa_real <= 0:
-            return "Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual"
-        
-        # Verifica se há mais de uma casa decimal, mas aceita números inteiros
-        if '.' in str(taxa_real) and len(str(taxa_real).split('.')[1]) > 1:
-            return "Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual"
-    except ValueError:
-        return "Digite um número válido para a taxa real anual"
-    
     return None
 
 
-def validar_beneficio_inss(inss):
-    try:
-        inss = float(inss)
-        if inss < 0:
-            return "Digite um número maior ou igual a zero para o benefício esperado do INSS"
-    except ValueError:
-        return "Digite um número válido para o benefício esperado do INSS"
-    return None
-
-def validar_poupanca_mensal(poupanca):
-    try:
-        poupanca = float(poupanca)
-        if poupanca < 0:
-            return "Digite um número maior ou igual a zero para a poupança mensal"
-    except ValueError:
-        return "Digite um número válido para a poupança mensal"
-    return None
+# In[ ]:
 
 
+#DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 
+
+# In[ ]:
+
+
+#ABRE A APLICACAO DASH DIRETAMENTE NO BROWSE
+import dash
+from dash import html
+import webbrowser
+from threading import Timer
+import socket
+
+# Função para encontrar uma porta disponível
+def find_available_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('localhost', 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+# Função para abrir o navegador com a porta correta
+def open_browser(port):
+    webbrowser.open_new(f"http://127.0.0.1:{port}/")
+
+# Inicia o servidor Dash
 if __name__ == '__main__':
-    setup_locale()
-    app.run(debug=True)
+    # Encontra uma porta disponível
+    port = find_available_port()
+    
+    # Aguarda 1 segundo antes de abrir o navegador com a porta encontrada
+    #Timer(1, open_browser, args=[port]).start()
+    open_browser(port)
+    # Executa o servidor Dash com a porta dinâmica
+    app.run_server(debug=False, port=port)
+
+
+
+
+
+
