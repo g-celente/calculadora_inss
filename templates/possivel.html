@@ -28,7 +28,7 @@
                 <span>Veja também:</span>
             </div>
             <li class="nav-list">
-                <a href="{{ url_for ('dashboard')}}">Calculadora de Renda</a>
+                <a href="{{ url_for ('dashboard')}}">Calculadora de Renda INSS</a>
             </li>
             <li class="nav-list">
                 <a href="{{ url_for ('desejada')}}">Renda Desejada</a>
@@ -113,10 +113,20 @@
                     <button type="submit" id="submit-button">CÁLCULO Renda Possível</button>
                     <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
                 </div>
+
+                <div class="container">
+                    {% if graph_base64 %}
+                        <div class="center-container">
+                            <!-- Aumenta o tamanho do iframe e ajusta para tela cheia -->
+                            <img src="data:image/png;base64,{{ graph_base64 }}" alt="Gráfico Renda Desejada"></img>
+                        </div>
+                    {% endif %}
+                </div>
             </form>
             <div class="titulo">
                 <h4>Nosso sistema realiza um download automático do seu relatório gerado no cálculo em
                     PDF.</h4>
+                <p>Duvidas! CONSULTE nossa AI clicando em ícone nesta página! </p>
             </div>
             
         </div>
@@ -151,4 +161,17 @@
     .error-message {
         margin-bottom: 10px;
     }
+
+    .center-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Estilo do iframe para o PDF */
+        .center-container img {
+            width: 100%;  /* Faz o iframe ocupar 100% da largura da tela */
+            height: 100vh; /* Faz o iframe ocupar a altura total da janela */
+            border: none;  /* Remove as bordas do iframe */
+            margin-bottom: 20px;
+        }
 </style>

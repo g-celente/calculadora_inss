@@ -89,18 +89,36 @@
         </div>
         
         {% if atntv %}
-            <div class="table-container">
-                <!-- Aplica a classe custom-table para estilizar a tabela -->
-                <div class="table">
-                    {{ atntv | safe }}
-                </div>
-            </div>
+        <div class="titulo">
+            <h4>Alternativas de Aposentadoria com Informações do CNIS</h4>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        {% for col_name in atntv[0].keys() %}
+                            <th scope="col">{{ col_name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in atntv %}
+                        <tr>
+                            {% for value in row.values() %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>        
         {% endif %}
 
         
         <div class="titulo">
             <h4>Nosso sistema realiza um download automático do seu relatório gerado no cálculo em
                 PDF.</h4>
+            <p>Duvidas! CONSULTE nossa AI clicando em ícone nesta página! </p>
         </div>
     </div>
 
@@ -148,36 +166,73 @@
 </html>
 
 <style>
-    .custom-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-        font-family: Arial, sans-serif;
-    }
-  
-    .custom-table th, .custom-table td {
-        padding: 10px;
-        text-align: left;
-        border: 1px solid #ddd;
-    }
-  
-    .custom-table th {
-        background-color: #4CAF50;
-        color: white;
-    }
-  
-    .custom-table tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-  
-    .custom-table tr:hover {
-        background-color: #ddd;
-    }
-  
-    .table-container {
-        overflow-x: auto;
-        margin: 0 auto;
-        max-width: 100%;
-    }
+    .table-responsive {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 20px;
+}
+
+/* Estilo geral da tabela */
+.table {
+    width: 90%;
+    border-collapse: collapse;
+    background-color: #d3d3d3; /* Fundo escuro */
+    color: #000000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Cabeçalho da tabela */
+.table thead {
+    background-color: #FF4500; /* Cabeçalho cinza escuro */
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.table thead th {
+    padding: 14px;
+    font-size: 14px;
+    font-weight: bold;
+    border-bottom: 2px solid #4a6278;
+    text-align: center;
+}
+
+/* Corpo da tabela */
+.table tbody tr {
+    border-bottom: 1px solid #d3d3d3;
+}
+
+.table tbody tr:hover {
+    background-color: #4a6278; /* Efeito hover */
+    cursor: pointer;
+}
+
+.table tbody td {
+    padding: 12px;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Bordas */
+.table-bordered {
+    border: 1px solid #4a6278;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #4a6278;
+}
+
+/* Estilo adicional de hover para linhas */
+.table-hover tbody tr:hover td {
+    background-color: #4a6278;
+}
+
+/* Alinhamento */
+.align-middle {
+    vertical-align: middle;
+}
   </style>
   

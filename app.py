@@ -2451,7 +2451,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     pdf_files = [filiado_pdf, vinculos_pdf, indicadores_pdf]
     pdf = merge_pdfs(pdf_files)
-    atntv_html = ATNTV.to_html(classes='table table-striped')
+    atntv_html = ATNTV.to_dict(orient="records")
     print(atntv_html)
 
     return pdf, atntv_html
@@ -2950,7 +2950,7 @@ def criar_grafico_rendaDesejada():
         graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
 
         # Enviar o gráfico codificado para o frontend
-        return render_template('resultado.html', graph_base64=graph_base64)
+        return render_template('desejada.html', graph_base64=graph_base64)
 
 
 #funcao cria grafico renda possivel
@@ -2997,8 +2997,6 @@ def criar_grafico_rendaPossivel():
 
         if not ret_invest_anual:
             return render_template('possivel.html', erro_anual="Por favor, insira um valor valido no investimento anual")
-        
-        ret_invest_anual = float(ret_invest_anual) / 100
 
 
         # Validações
@@ -3011,7 +3009,7 @@ def criar_grafico_rendaPossivel():
         erro_poupanca = validar_poupanca_mensal(poupanca_possivel)
 
         if erro_idade_inicial or erro_idade_aposentadoria or erro_expectativa or erro_reserva or erro_taxa or erro_beneficio or erro_poupanca:
-            return render_template('formulario.html', 
+            return render_template('possivel.html', 
                                    erro_idade_inicial=erro_idade_inicial, 
                                    erro_idade_aposentadoria=erro_idade_aposentadoria, 
                                    erro_expectativa=erro_expectativa, 
@@ -3203,9 +3201,9 @@ def criar_grafico_rendaPossivel():
         graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
 
         # Enviar o gráfico codificado para o frontend
-        return render_template('resultado.html', graph_base64=graph_base64)
+        return render_template('possivel.html', graph_base64=graph_base64)
     
-    return render_template('resultado.html')
+    return render_template('possivel.html')
 
 
 @app.route('/gerar_relatorio', methods=['POST'])
@@ -3368,11 +3366,17 @@ def validar_reserva_financeira(reserva):
 def validar_taxa_real(taxa_real):
     try:
         taxa_real = float(taxa_real)
-        if taxa_real <= 0 or len(str(taxa_real).split('.')[1]) > 1:
+        if taxa_real <= 0:
+            return "Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual"
+        
+        # Verifica se há mais de uma casa decimal, mas aceita números inteiros
+        if '.' in str(taxa_real) and len(str(taxa_real).split('.')[1]) > 1:
             return "Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual"
     except ValueError:
         return "Digite um número válido para a taxa real anual"
+    
     return None
+
 
 def validar_beneficio_inss(inss):
     try:
