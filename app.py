@@ -656,9 +656,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
     ATNTV = pd.DataFrame({
         'Regra': ['Idade'],
         'Data Aposentadoria': [dt_ap_id],
-        'Beneficio Estimado': [bnf_id],
-        'Numero_Futuro Contribuicoes': [ctr_id],
-        'Salario_Futuro Bruto': [parcela]})
+        'Benefício Estimado': [bnf_id],
+        'Número Futuro Contribuições': [ctr_id],
+        'Salário Futuro Bruto': [parcela]})
 
     #CALCULA IDADE PARA REGRA DE PONTOS
     #REGRA PONTOS: ADICIONA linhas em df=extpr para completar linhas para a idade e carencia min para H/M
