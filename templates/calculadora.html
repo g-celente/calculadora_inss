@@ -54,8 +54,14 @@
                     </ul>
                     <input type="hidden" name="sexo" id="sexo" required>
                 </div>
+
+                {% if error_sexo %}
+                <div class="error-message">
+                    <strong style="color: red; padding-bottom: 20px;">{{ error_sexo }}</strong>
+                </div>
+                {% endif %}
         
-                <div class="form-group">
+                <div class="form-group" style="margin-top: 20px;">
                     <label for="salario_bruto">Salário Bruto Atual (R$):</label>
                     <input type="number" name="salario_bruto" id="salario_bruto" min="0" required value="0" placeholder="Digite um número inteiro maior OU igual a ZERO">
                 </div>
@@ -153,13 +159,6 @@
                 document.querySelector('.selected').innerText = displayText;
                 document.querySelector('#sexo').value = value;
             });
-        });
-
-        // Desabilitar o botão de envio após o primeiro clique
-        document.getElementById('calculadora-form').addEventListener('submit', function(event) {
-            var submitButton = document.getElementById('submit-button');
-            submitButton.disabled = true;
-            submitButton.innerText = "Aguarde...";
         });
     </script>
 </body>

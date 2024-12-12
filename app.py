@@ -629,7 +629,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
             BNFC = max(BenCOtim, BenSOtim)
 
     #PARAMETROS DE APOSENTADORIA IDADE PARA TABELA PDF DE RELATORIO
-    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA POR IDADE
+    # INDICA Benefício Estimado DE APOSENTADORIA POR IDADE
     vlr_id = BNFC
 
     # Criar a variável string 'bnf_id' com formatação para exibir todas as casas decimais
@@ -901,7 +901,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 'comp' é:", dt_ap_pt)
 
-    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA POR PONTOS
+    # INDICA Benefício Estimado DE APOSENTADORIA POR PONTOS
     if Regptos==1:
         vlr_pt = BNFC
         # Criar a variável string 'bnf_pt' com formatação para exibir todas as casas decimais
@@ -930,9 +930,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pontos'],
         'Data Aposentadoria': [dt_ap_pt],
-        'Beneficio Estimado': [bnf_pt],
-        'Numero_Futuro Contribuicoes': [ctr_pt],
-        'Salario_Futuro Bruto': [parcela]})
+        'Benefício Estimado': [bnf_pt],
+        'Número Futuro Contribuições': [ctr_pt],
+        'Salário Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
@@ -1176,7 +1176,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         dt_ap_prg = prgv['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
 
-    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA PROGRESSIVA
+    # INDICA Benefício Estimado DE APOSENTADORIA PROGRESSIVA
     if Regprg==1:
         vlr_prg = BNFC
         # Criar a variável string 'bnf_pt' com formatação para exibir todas as casas decimais
@@ -1204,9 +1204,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Progressiva'],
         'Data Aposentadoria': [dt_ap_prg],
-        'Beneficio Estimado': [bnf_prg],
-        'Numero_Futuro Contribuicoes': [ctr_prg],
-        'Salario_Futuro Bruto': [parcela]})
+        'Benefício Estimado': [bnf_prg],
+        'Número Futuro Contribuições': [ctr_prg],
+        'Salário Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
@@ -1416,7 +1416,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 100 é:", dt_ap_100)
 
-    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA PEDAGIO 100
+    # INDICA Benefício Estimado DE APOSENTADORIA PEDAGIO 100
     if Reg100==1:
         vlr_100 = BNFC
     else:
@@ -1444,9 +1444,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pedagio100'],
         'Data Aposentadoria': [dt_ap_100],
-        'Beneficio Estimado': [bnf_100],
-        'Numero_Futuro Contribuicoes': [ctr_100],
-        'Salario_Futuro Bruto': [parcela]})
+        'Benefício Estimado': [bnf_100],
+        'Número Futuro Contribuições': [ctr_100],
+        'Salário Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
@@ -1510,7 +1510,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         dt_ap_50 = pdg50['comp'].max().strftime('%b/%Y').capitalize()
         locale.setlocale(locale.LC_TIME, '')
 
-    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA CARENCIA100
+    # INDICA Benefício Estimado DE APOSENTADORIA CARENCIA100
     #vlr_50 = 4500.00
 
     # Criar a variável string 'bnf_100' com formatação para exibir todas as casas decimais
@@ -1540,9 +1540,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pedagio50'],
         'Data Aposentadoria': [dt_ap_50],
-        'Beneficio Estimado': [bnf_50],
-        'Numero_Futuro Contribuicoes': [ctr_50],
-        'Salario_Futuro Bruto': [parcela]})
+        'Benefício Estimado': [bnf_50],
+        'Número Futuro Contribuições': [ctr_50],
+        'Salário Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
@@ -1753,7 +1753,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         locale.setlocale(locale.LC_TIME, '')
         #print("data carencia e idade 100p50 é:", dt_ap_1p5)
 
-    # INDICA BENEFICIO ESTIMADO DE APOSENTADORIA CARENCIA100p50
+    # INDICA Benefício Estimado DE APOSENTADORIA CARENCIA100p50
     if Reg100to50==1:
         vlr_1p5 = BNFC
         # Criar a variável string 'bnf_100' com formatação para exibir todas as casas decimais
@@ -1782,9 +1782,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         new_row = pd.DataFrame({
         'Regra': ['Pedagio100'],
         'Data Aposentadoria': [dt_ap_1p5],
-        'Beneficio Estimado': [bnf_1p5],
-        'Numero_Futuro Contribuicoes': [ctr_1p5],
-        'Salario_Futuro Bruto': [parcela]})
+        'Benefício Estimado': [bnf_1p5],
+        'Número Futuro Contribuições': [ctr_1p5],
+        'Salário Futuro Bruto': [parcela]})
 
         ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
@@ -3202,7 +3202,7 @@ def criar_grafico_rendaPossivel():
 
         # Enviar o gráfico codificado para o frontend
         return render_template('possivel.html', graph_base64=graph_base64)
-    
+
     return render_template('possivel.html')
 
 
@@ -3224,8 +3224,11 @@ def gerar_relatorio():
         print(sx)
         print(salario_bruto)
 
+        if not sx:
+            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade')
+
         # Verificações para o campo salario_bruto
-        if not salario_bruto.strip():  # Verifica se o campo está vazio
+        if not salario_bruto:  # Verifica se o campo está vazio
             error_salario = 'Digite um número inteiro maior ou igual a zero.'
             return render_template('calculadora.html', error_salario=error_salario)
 
