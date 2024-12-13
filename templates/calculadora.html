@@ -92,6 +92,12 @@
                 
 
             </form>
+
+            {% if error_relatorio %}
+            <div class="error-message">
+                <strong style="color: red;">{{ error_relatorio }}</strong>
+            </div>
+            {% endif %}
         </div>
         
         {% if atntv %}

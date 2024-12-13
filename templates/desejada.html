@@ -114,6 +114,12 @@
                     <button type="submit" id="submit-button">CÁLCULO Renda Desejada</button>
                     <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
                 </div>
+
+                {% if erro_server %}
+                <div class="error-message">
+                    <strong style="color: red;">{{ erro_server }}</strong>
+                </div>
+                {% endif %}
                 <div class="container">
                     {% if graph_base64 %}
                         <div class="center-container">
