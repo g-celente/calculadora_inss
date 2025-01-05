@@ -24,6 +24,7 @@ from flask_mail import Mail, Message
 import matplotlib.image as mpimg
 from reportlab.platypus import Image
 from dotenv import load_dotenv
+from flask_babel import Babel
 
 load_dotenv()
 
@@ -34,6 +35,10 @@ def setup_locale():
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     except locale.Error:
         print("Locale not supported")
+
+# Configuração de linguagem do Back-end
+app.config['BABEL_DEFAULT_LOCALE'] = 'pt_BR'
+babel = Babel(app)
 
 # Configuração do banco de dados SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
@@ -2639,6 +2644,11 @@ def page_not_found(e):
 def sobre():
     return render_template('sobre.html')
 
+@app.route('/ia')
+@token_required
+def ia():
+    return render_template('ia.html')
+
 @app.route('/contato')
 @token_required
 def contato():
@@ -2785,10 +2795,9 @@ def logout():
 @app.route('/grafico_renda_desejada', methods=['POST'])
 @token_required
 def criar_grafico_rendaDesejada():
-    
     if request.method == 'POST':
-        
         try:
+            # Capturar os dados do formulário
             idade_inicial = request.form['id_ini']
             idade_aposentadoria = request.form['id_apos']
             expec_vida = request.form['id_exp']
@@ -2796,73 +2805,58 @@ def criar_grafico_rendaDesejada():
             inss = request.form['id_inss']
             renda_desejada = request.form['id_dese']
             taxa_real_ano = request.form['id_tx']
+            button = request.form['submit-button']
 
-            if not taxa_real_ano:
-                return render_template('desejada.html', error_taxa="Por favor, insira um valor na taxa real")
-
-            # Função para validar se o valor é um número inteiro
+            # Funções de validação
             def validar_inteiro(valor):
                 try:
                     return int(valor)
                 except ValueError:
                     return None
 
-            # Função para validar se o valor é um número float com uma casa decimal
             def validar_taxa_real(taxa_real):
                 if not taxa_real:
                     return "Digite um número MAIOR que zero com no máximo uma casa decimal"
-                
                 try:
                     taxa = float(taxa_real)
-                    # Verifica se o número é maior que zero
-                    if taxa <= 0:
+                    if taxa <= 0 or taxa >= 21:
                         return "Digite um número MAIOR que zero com no máximo uma casa decimal"
-                    
-                    # Verifica se há parte decimal e se tem no máximo 1 dígito
                     if '.' in taxa_real:
                         decimal_part = taxa_real.split('.')[1]
                         if len(decimal_part) > 1:
                             return "Digite um número MAIOR que zero com no máximo uma casa decimal"
                 except (ValueError, IndexError):
                     return "Digite um número MAIOR que zero com no máximo uma casa decimal"
+                return None
 
-                return None  # Tudo certo
-
-            # Validações para o campo IDADE INICIAL
+            # Validações
             idade_inicial = validar_inteiro(idade_inicial)
             if idade_inicial is None or idade_inicial < 15 or idade_inicial > 100:
-                return render_template("desejada.html", error_idade="Digite um número inteiro entre 15 e 100 para a idade inicial")
+                return render_template("desejada.html", error_idade="Digite um número inteiro entre 15 e 100 para a idade inicial", form_data=request.form)
 
-            # Validações para o campo IDADE APOSENTADORIA
             idade_aposentadoria = validar_inteiro(idade_aposentadoria)
             if idade_aposentadoria is None or idade_aposentadoria < 15 or idade_aposentadoria > 120 or idade_aposentadoria <= idade_inicial:
-                return render_template("desejada.html",error_aposentadoria="Digite um número inteiro maior que a idade atual para aposentadoria")
+                return render_template("desejada.html", error_aposentadoria="Digite um número inteiro maior que a idade atual para aposentadoria", form_data=request.form)
 
-            # Validações para o campo EXPECTATIVA DE VIDA
             expec_vida = validar_inteiro(expec_vida)
             if expec_vida is None or expec_vida < 15 or expec_vida > 150 or expec_vida <= idade_aposentadoria:
-                return render_template("desejada.html",error_vida="Digite um número inteiro maior que a idade de aposentadoria para a expectativa de vida")
+                return render_template("desejada.html", error_vida="Digite um número inteiro maior que a idade de aposentadoria para a expectativa de vida", form_data=request.form)
 
-            # Validações para o campo RESERVA FINANCEIRA
             reserva = validar_inteiro(reserva)
             if reserva is None or reserva < 0:
-                return render_template('desejada.html', error_reserva = "Digite um número inteiro maior ou igual a zero para a reserva financeira")
+                return render_template('desejada.html', error_reserva="Digite um número inteiro maior ou igual a zero para a reserva financeira", form_data=request.form)
 
-            # Validações para o campo TAXA REAL ANUAL
-            taxa_real_ano = validar_taxa_real(taxa_real_ano)
-            if taxa_real_ano is None or taxa_real_ano <= 0:
-                return render_template('desejada.html', error_taxa="Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual")
+            taxa_real_ano_error = validar_taxa_real(taxa_real_ano)
+            if taxa_real_ano_error:
+                return render_template('desejada.html', error_taxa=taxa_real_ano_error, form_data=request.form)
 
-            # Validações para o campo BENEFÍCIO ESPERADO INSS
             inss = validar_inteiro(inss)
             if inss is None or inss < 0:
-                return render_template('desejada.html', error_inss="Digite um número inteiro maior ou igual a zero para o benefício esperado do INSS")
+                return render_template('desejada.html', error_inss="Digite um número inteiro maior ou igual a zero para o benefício esperado do INSS", form_data=request.form)
 
-            # Validações para o campo RENDA MENSAL DESEJADA
             renda_desejada = validar_inteiro(renda_desejada)
             if renda_desejada is None or renda_desejada <= 0:
-                return render_template('desejada.html', error_desejada= "Digite um número inteiro maior que zero para a renda mensal desejada")
-
+                return render_template('desejada.html', error_desejada="Digite um número inteiro maior que zero para a renda mensal desejada", form_data=request.form)
             # Conversões e cálculos após validações
             ret_invest_anual = float(taxa_real_ano) / 100
             ret_invest_mensal = (1 + ret_invest_anual) ** (1/12) - 1  # Taxa mensal
@@ -3036,18 +3030,23 @@ def criar_grafico_rendaDesejada():
             # Ajustando layout
             plt.tight_layout(rect=[0, 0, 0.95, 1])
 
-                # Salvar o gráfico em PDF diretamente no buffer
+            if button == "2":
+                graph = io.BytesIO()
+                plt.savefig(graph, format='pdf', bbox_inches='tight')
+                graph.seek(0)
+                return send_file(graph, as_attachment=True, download_name='GráficoPossível.pdf')
+            
             img = io.BytesIO()
             plt.savefig(img, format='png', bbox_inches='tight')
             img.seek(0)
             graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
 
             # Enviar o gráfico codificado para o frontend
-            return render_template('desejada.html', graph_base64=graph_base64)
+            return render_template('desejada.html', graph_base64=graph_base64, form_data = request.form)
         
         except Exception as err:
             print(err)
-            return render_template('desejada.html', error_server="Tivemos um problema nos nossos servidores, por favor, entre em contato imediatamente com o suporte")
+            return render_template('desejada.html', error_server="Tivemos um problema nos nossos servidores, por favor, entre em contato imediatamente com o suporte", form_data= request.form)
 
 
 #funcao cria grafico renda possivel
@@ -3065,33 +3064,35 @@ def criar_grafico_rendaPossivel():
             poupanca_possivel = request.form['id_poss']
             ret_invest_anual = request.form['id_tx']
 
+            button = request.form['submit-button']
+
             if not idade_inicial:
-                return render_template('possivel.html', erro_idade_inicial="Por favor, insira um valor na idade inicial")
+                return render_template('possivel.html', erro_idade_inicial="Digite um número maior que zero com no máximo uma casa decimal para a idade inicial")
             
             idade_inicial = int(idade_inicial)
 
             if not idade_aposentadoria:
-                return render_template('possivel.html', erro_idade_aposentadoria="Por favor, insira um valor na idade de aposentadoria")
+                return render_template('possivel.html', erro_idade_aposentadoria="Digite um número maior que zero com no máximo uma casa decimal para a aposentadoria")
 
             idade_aposentadoria = int(idade_aposentadoria)
 
             if not expec_vida:
-                return render_template('possivel.html', erro_expectativa="Por favor, insira um valor na expectativa de vida")
+                return render_template('possivel.html', erro_expectativa="Digite um número maior que zero com no máximo uma casa decimal para a expectativa de vida")
             
             expec_vida = int(expec_vida)
 
             if not reserva:
-                return render_template('possivel.html', erro_expectativa="Por favor, insira um valor na Reserva")
+                return render_template('possivel.html', erro_expectativa="Digite um número maior que zero com no máximo uma casa decimal para a Reserva")
             
             reserva = float(reserva)
 
             if not inss:
-                return render_template('possivel.html', erro_beneficio="Por favor, insira um valor válido no Inss")
+                return render_template('possivel.html', erro_beneficio="Digite um número maior que zero com no máximo uma casa decimal para a Inss")
             
             inss = float(inss)
 
             if not poupanca_possivel:
-                return render_template('possivel.html', erro_poupanca="Por favor, insira um valor na poupança")
+                return render_template('possivel.html', erro_poupanca="Digite um número maior que zero com no máximo uma casa decimal para a poupança")
             poupanca_possivel = float(poupanca_possivel)
 
             if not ret_invest_anual:
@@ -3294,13 +3295,26 @@ def criar_grafico_rendaPossivel():
             # Ajustando layout
             plt.tight_layout(rect=[0, 0, 0.95, 1])
 
+            if button == "2":
+                graph = io.BytesIO()
+                plt.savefig(graph, format='pdf', bbox_inches='tight')
+                graph.seek(0)
+                return send_file(graph, as_attachment=True, download_name='GráficoPossível.pdf')
+            
             img = io.BytesIO()
             plt.savefig(img, format='png', bbox_inches='tight')
             img.seek(0)
             graph_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+            
 
             # Enviar o gráfico codificado para o frontend
-            return render_template('possivel.html', graph_base64=graph_base64)
+            return render_template('possivel.html', graph_base64=graph_base64, idade_inicial=idade_inicial, 
+                                       idade_aposentadoria=idade_aposentadoria, 
+                                       expec_vida=expec_vida, 
+                                       reserva=reserva, 
+                                       inss=inss, 
+                                       poupanca_possivel=poupanca_possivel, 
+                                       ret_invest_anual=ret_invest_anual)
         
         return redirect(url_for('possivel'))
     except Exception as err:
@@ -3365,7 +3379,7 @@ def gerar_relatorio():
                 return send_file(pdf, as_attachment=True, download_name='RelatInss.pdf')
                         
             # Passa a tabela HTML para o template `calculadora.html`
-            return render_template('calculadora.html', atntv=atntv_html, pdf=pdf)
+            return render_template('calculadora.html', atntv=atntv_html, pdf=pdf, sx=sx, cnis_file=cnis_buffer, slbr=slbr)
 
     except Exception as e:
         app.logger.error(f"Error occurred: {str(e)}")
@@ -3471,8 +3485,8 @@ def validar_reserva_financeira(reserva):
 def validar_taxa_real(taxa_real):
     try:
         taxa_real = float(taxa_real)
-        if taxa_real <= 0:
-            return "Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual"
+        if taxa_real <= 0 or taxa_real >= 21:
+            return "Digite um número MAIOR que zero e MENOR que 20 com no máximo uma casa decimal para a taxa real anual"
         
         # Verifica se há mais de uma casa decimal, mas aceita números inteiros
         if '.' in str(taxa_real) and len(str(taxa_real).split('.')[1]) > 1:

@@ -14,7 +14,7 @@
             <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                <li class="nav_item"><a href="#">Consulte nossa AI</a></li>
+                <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
                 <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
                 <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
             </ul>
@@ -42,7 +42,66 @@
                 verificando o impacto no seu esforço de investimento.</p>
         </div>
 
-        <!-- Div para a Calculadora 1 - INSS -->
+        {% if slbr and sx and cnis_file %}
+        <div class="calculadora">
+            <h2 style="color: #FF4500;">Calculadora de Renda da Previdência do INSS</h2>
+            <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data" id="calculadora-form">
+                <div class="custom-select" id="custom-select">
+                    <div class="selected">PREENCHER CAMPO SEXO</div>
+                    <ul class="options">
+                      <li data-value="1">Masculino</li>
+                      <li data-value="0">Feminino</li>
+                    </ul>
+                    <input type="hidden" name="sexo" id="sexo" value="{{ sx if sx else 0 }}">
+                </div>
+
+                {% if error_sexo %}
+                <div class="error-message">
+                    <strong style="color: red; padding-bottom: 20px;">{{ error_sexo }}</strong>
+                </div>
+                {% endif %}
+        
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="salario_bruto">Salário Bruto Atual (R$):</label>
+                    <input type="number" name="salario_bruto" id="salario_bruto" min="0" required value="{{ slbr if slbr else 0 }}" placeholder="Digite um número inteiro maior OU igual a ZERO">
+                </div>
+                {% if error_salario %}
+                <div class="error-message">
+                    <strong style="color: red;">{{ error_salario }}</strong>
+                </div>
+                {% endif %}
+        
+                <div class="form-group">
+                    <label for="cnis_file">Carregue CNIS</label>
+                    <input type="file" name="cnis_file" accept=".pdf" id="cnis_file" value="{{ cnis_file if cnis_file else None }}">
+                </div>
+        
+                {% if error %}
+                <div class="error-message">
+                    <strong style="color: red;">{{ error }}</strong>
+                </div>
+                {% endif %}
+        
+                <div class="button-class" style="display: flex;">
+                    <button type="submit" name="submit-button" value="1" id="submit-button1">Calcular Benefício INSS</button>
+                
+                    <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
+                    
+                    <p style="margin-left: 20px; color: #555555;">Download do relatório “GRP-Análise Previdência”, clique em ‘Gerar PDF’ e aguarde. 
+                    </p>
+                </div>
+                
+
+            </form>
+
+            {% if error_relatorio %}
+            <div class="error-message">
+                <strong style="color: red;">{{ error_relatorio }}</strong>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% else %}
         <div class="calculadora">
             <h2 style="color: #FF4500;">Calculadora de Renda da Previdência do INSS</h2>
             <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data" id="calculadora-form">
@@ -87,7 +146,8 @@
                 
                     <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
                     
-                    <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
+                    <p style="margin-left: 20px; color: #555555;">Download do relatório “GRP-Análise Previdência”, clique em ‘Gerar PDF’ e aguarde. 
+                    </p>
                 </div>
                 
 
@@ -99,6 +159,8 @@
             </div>
             {% endif %}
         </div>
+        
+        {% endif %}
         
         {% if atntv %}
         <div class="titulo">
@@ -128,9 +190,7 @@
 
         
         <div class="titulo">
-            <h4>Nosso sistema realiza um download automático do seu relatório gerado no cálculo em
-                PDF.</h4>
-            <p>Duvidas! CONSULTE nossa AI clicando em ícone nesta página! </p>
+            <h4>Duvidas! CONSULTE nossa AI clicando em ícone nesta página! </h4>
         </div>
     </div>
 

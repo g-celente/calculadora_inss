@@ -16,7 +16,7 @@
             </i>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                <li class="nav_item"><a href="#">Consulte nossa AI</a></li>
+                <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
                 <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
                 <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
             </ul>
@@ -45,11 +45,12 @@
                 verificando o impacto no seu esforço de investimento.</p>
         </div>
         <!-- Div para a Calculadora 1 - INSS -->
+         {% if form_data %}
         <div class="calculadora">
             <h2 style="color: #ff4500;">Cálculo de RENDA DESEJADA Futura</h2>
             <form id="income-simulation-form" method="POST" action="{{ url_for('criar_grafico_rendaDesejada') }}">
                 <label for="id_ini">Idade Atual:</label>
-                <input type="number" id="id_ini" name="id_ini" min="15" max="100" value="25">
+                <input type="number" id="id_ini" name="id_ini" min="15" max="100" value="{{ form_data.id_ini if form_data.id_ini else 0 }}">
 
                 {% if error_idade %}
                 <div class="error-message">
@@ -58,7 +59,7 @@
                 {% endif %}
                 
                 <label for="id_apos">Idade Aposentadoria:</label>
-                <input type="number" id="id_apos" name="id_apos" min="15" max="120" value="65">
+                <input type="number" id="id_apos" name="id_apos" min="15" max="120" value="{{ form_data.id_apos if form_data.id_apos else 0 }}">
 
                 {% if error_aposentadoria %}
                 <div class="error-message">
@@ -67,7 +68,7 @@
                 {% endif %}
                 
                 <label for="id_exp">Expectativa de Vida:</label>
-                <input type="number" id="id_exp" name="id_exp" min="15" max="150" value="85">
+                <input type="number" id="id_exp" name="id_exp" min="15" max="150" value="{{ form_data.id_exp if form_data.id_exp else 0 }}">
 
                 {% if error_vida %}
                 <div class="error-message">
@@ -76,7 +77,7 @@
                 {% endif %}
                 
                 <label for="id_reser">Reserva Financeira Atual (R$):</label>
-                <input type="number" id="id_reser" name="id_reser" min="0" value="1000">
+                <input type="number" id="id_reser" name="id_reser" min="0" value="{{ form_data.id_reser if form_data.id_reser else 0 }}">
 
                 {% if error_reserva %}
                 <div class="error-message">
@@ -85,7 +86,7 @@
                 {% endif %}
                 
                 <label for="id_tx">Taxa real ano (%):</label>
-                <input type="number" id="id_tx" name="id_tx" value="4" min="0">
+                <input type="text" id="id_tx" name="id_tx" value="{{ form_data.id_tx if form_data.id_tx else 0 }}">
                 
                 {% if error_taxa %}
                 <div class="error-message">
@@ -93,7 +94,7 @@
                 </div>
                 {% endif %}
                 <label for="id_inss">Benefício Esperado INSS (R$):</label>
-                <input type="number" id="id_inss" name="id_inss" min="0" value="0">
+                <input type="number" id="id_inss" name="id_inss" min="0" value="{{ form_data.id_inss if form_data.id_inss else 0 }}">
 
                 {% if error_inss %}
                 <div class="error-message">
@@ -102,7 +103,7 @@
                 {% endif %}
                 
                 <label for="id_dese">Renda Mensal DESEJADA (R$):</label>
-                <input type="number" id="id_dese" name="id_dese" min="0" value="1000">
+                <input type="number" id="id_dese" name="id_dese" min="0" value="{{ form_data.id_dese if form_data.id_dese else 0 }}">
                 
                 {% if error_desejada %}
                 <div class="error-message">
@@ -111,7 +112,8 @@
                 {% endif %}
                 
                 <div class="button-class" style="display: flex;">
-                    <button type="submit" id="submit-button">CÁLCULO Renda Desejada</button>
+                    <button type="submit" name="submit-button" value="1" id="submit-button1">CÁLCULO Renda Desejada</button>
+                    <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
                     <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
                 </div>
 
@@ -129,9 +131,95 @@
                     {% endif %}
                 </div>
             </form>
+            {% else %}
+            <div class="calculadora">
+                <h2 style="color: #ff4500;">Cálculo de RENDA DESEJADA Futura</h2>
+                <form id="income-simulation-form" method="POST" action="{{ url_for('criar_grafico_rendaDesejada') }}">
+                    <label for="id_ini">Idade Atual:</label>
+                    <input type="number" id="id_ini" name="id_ini" min="15" max="100" value="25">
+    
+                    {% if error_idade %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ error_idade }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <label for="id_apos">Idade Aposentadoria:</label>
+                    <input type="number" id="id_apos" name="id_apos" min="15" max="120" value="65">
+    
+                    {% if error_aposentadoria %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ error_aposentadoria }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <label for="id_exp">Expectativa de Vida:</label>
+                    <input type="number" id="id_exp" name="id_exp" min="15" max="150" value="85">
+    
+                    {% if error_vida %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ error_vida }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <label for="id_reser">Reserva Financeira Atual (R$):</label>
+                    <input type="number" id="id_reser" name="id_reser" min="0" value="1000">
+    
+                    {% if error_reserva %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ error_reserva }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <label for="id_tx">Taxa real ano (%):</label>
+                    <input type="text" id="id_tx" name="id_tx">
+                    
+                    {% if error_taxa %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ error_taxa }}</strong>
+                    </div>
+                    {% endif %}
+                    <label for="id_inss">Benefício Esperado INSS (R$):</label>
+                    <input type="number" id="id_inss" name="id_inss" min="0" value="0">
+    
+                    {% if error_inss %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ error_inss }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <label for="id_dese">Renda Mensal DESEJADA (R$):</label>
+                    <input type="number" id="id_dese" name="id_dese" min="0" value="1000">
+                    
+                    {% if error_desejada %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ error_desejada }}</strong>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="button-class" style="display: flex;">
+                        <button type="submit" name="submit-button" value="1" id="submit-button1">CÁLCULO Renda Desejada</button>
+                        <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
+                        <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
+                    </div>
+    
+                    {% if erro_server %}
+                    <div class="error-message">
+                        <strong style="color: red;">{{ erro_server }}</strong>
+                    </div>
+                    {% endif %}
+                    <div class="container">
+                        {% if graph_base64 %}
+                            <div class="center-container">
+                                <!-- Aumenta o tamanho do iframe e ajusta para tela cheia -->
+                                <img src="data:image/png;base64,{{ graph_base64 }}" alt="Gráfico Renda Desejada"></img>
+                            </div>
+                        {% endif %}
+                    </div>
+                </form>
+                {% endif %}
             <div class="titulo">
-                <h4>Nosso sistema realiza um download automático do seu relatório gerado no cálculo em
-                    PDF.</h4>
+                <h4>Faça o download do gráfico acima usando o botão ‘Gerar PDF’</h4>
                 <p>Duvidas! CONSULTE nossa AI clicando em ícone nesta página! </p>
             </div>
         </div>

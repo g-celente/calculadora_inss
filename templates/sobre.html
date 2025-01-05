@@ -16,7 +16,7 @@
             </i>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
-                <li class="nav_item"><a href="#">Consulte nossa AI</a></li>
+                <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
                 <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
                 <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
             </ul>
@@ -113,11 +113,11 @@
 
             // Define o conteúdo com base no botão clicado
             if (type === 'previdencia') {
-                modalText.textContent = 'Lorem ipsum dolor sit amet. Et dolorem quasi a nobis ducimus qui voluptas incidunt. At quasi minus rem natus rerum qui enim incidunt quo perferendis eaque. Est ullam omnis ab dolor fugit ad corporis dolorem et quod voluptatem in dolorem omnis et repellendus molestias. A illum delectus a aliquid consequuntur ut nisi officiis.';
+                modalText.textContent = 'Clique para iniciar o cálculo de renda Previdência é baseado nas contribuições que você já fez ao INSS e nas regras vigentes da previdência. Em caso de dúvidas, ‘Consulte Nossa AI’ ';
             } else if (type === 'renda-possivel') {
-                modalText.textContent = 'Lorem ipsum dolor sit amet. Et dolorem quasi a nobis ducimus qui voluptas incidunt. At quasi minus rem natus rerum qui enim incidunt quo perferendis eaque. Est ullam omnis ab dolor fugit ad corporis dolorem et quod voluptatem in dolorem omnis et repellendus molestias. A illum delectus a aliquid consequuntur ut nisi officiis.';
+                modalText.textContent = 'Clique para iniciar o cálculo da Renda Desejada que leva em consideração o valor que você gostaria de receber mensalmente na aposentadoria e mostra o quanto você precisará poupar hoje para atingir este valor. Em caso de dúvidas, ‘Consulte Nossa AI’';
             } else if (type === 'renda-desejada') {
-                modalText.textContent = 'Lorem ipsum dolor sit amet. Et dolorem quasi a nobis ducimus qui voluptas incidunt. At quasi minus rem natus rerum qui enim incidunt quo perferendis eaque. Est ullam omnis ab dolor fugit ad corporis dolorem et quod voluptatem in dolorem omnis et repellendus molestias. A illum delectus a aliquid consequuntur ut nisi officiis.';
+                modalText.textContent = 'Clique para iniciar o cálculo da Renda Possível que leva em consideração o quanto você consegue hoje poupar mensalmente e mostra o quanto conseguirá receber mensamente na aposentaria com esta poupança. Em caso de dúvidas, ‘Consulte Nossa AI’';
             }
 
             modal.style.display = 'block';

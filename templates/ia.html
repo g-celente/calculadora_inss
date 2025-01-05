@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulação INSS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav id="navbar">
+            <i class="fa-solid fa-burger" id="navicon">
+                <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
+            </i>
+            <ul id="nav_list">
+                <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
+                <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
+                <li class="nav_item"><a href="{{ url_for('getUser') }}">Meu Perfil</a></li>
+                <li class="nav_item"><a href="{{ url_for('logout') }}">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="home2">
+            <div id="cta">
+                <h1 class="title">
+                    Utilize Nossa IA Para<br>
+                    <span>Obter Qualquer Informação!</span>
+                </h1>
+                <div id="cta_container">
+                    <div id="cta_botao">
+                        <a href="{{ url_for('dashboard') }}" class="button"><span>Consulte Nossa IA</span></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container2">
+            <div class="calculadora2">
+                <div class='titulo'>
+                    <h4 style="font-size: 20px; ">Consulte Nossa IA</h4>
+                    <p style="font-size: 17px; text-align: justify;"> Está disponível para você nossa AI que está capacitada a dar informações sobre: <br><br>
+                        - O site;
+                        <br>- Nossos produtos;
+                        <br>- Preenchimento de campos para cálculo para geração relatórios;
+                        <br>- Conceitos da previdência pública tratados em nossos relatórios;
+                        <br>- Conceitos de educação financeira e estratégias de investimento;
+                        <br><br>Além disso nossa AI estará continuamente incorporando informações para aprimorar e ampliar
+                        sua capacitação.
+                        Consulte-a quando tiver dúvidas ou quiser simplesmente conhecimento! 
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="titulo">
+            <p style="font-size: 18px; font-family: 'Roboto', sans-serif;">"Se você quer ser bem sucedido,<br> precisa ter dedicação total, buscar <br>seu último limite e dar o melhor de si"<br><span><h2 style="color: black;">Ayrton Senna</h2></span></p>
+        </div>
+    </main>
+    <footer class="footer">
+        <!-- Logo Centralizada -->
+        <div class="footer-logo">
+            <img src="/static/assets/GRP branding.LOGOMARCA.png" alt="Logo">
+        </div>
+        
+        <!-- Links Centralizados -->
+        <div class="footer-links">
+            <a href="https://guiarendaprevidencia.com.br/app-quemsomos/">Quem Somos</a>
+            <a href="https://guiarendaprevidencia.com.br/como-funciona/">Como Funciona</a>
+            <a href="https://guiarendaprevidencia.com.br/duvidas-comuns-app/">Dúvidas Comuns</a>
+            <a href="https://guiarendaprevidencia.com.br/politicas-de-privacidade-app/">Política de Privacidade</a>
+            <a href="https://guiarendaprevidencia.com.br/fale-conosco-app/">Fale Conosco</a>
+        </div>
+    
+        <!-- Direitos Reservados Centralizados -->
+        <div class="footer-copyright">
+            GRP 2024 © P&D DIGITAL LTDA. Todos os direitos reservados. CNPJ: 44.325.141/0001-50
+        </div>
+    </footer>
+</body>
+</html>
