@@ -3067,36 +3067,36 @@ def criar_grafico_rendaPossivel():
             button = request.form['submit-button']
 
             if not idade_inicial:
-                return render_template('possivel.html', erro_idade_inicial="Digite um número maior que zero com no máximo uma casa decimal para a idade inicial")
+                return render_template('possivel.html', erro_idade_inicial="Digite um número maior que zero com no máximo uma casa decimal para a idade inicial", form_data=request.form)
             
             idade_inicial = int(idade_inicial)
 
             if not idade_aposentadoria:
-                return render_template('possivel.html', erro_idade_aposentadoria="Digite um número maior que zero com no máximo uma casa decimal para a aposentadoria")
+                return render_template('possivel.html', erro_idade_aposentadoria="Digite um número maior que zero com no máximo uma casa decimal para a aposentadoria", form_data=request.form)
 
             idade_aposentadoria = int(idade_aposentadoria)
 
             if not expec_vida:
-                return render_template('possivel.html', erro_expectativa="Digite um número maior que zero com no máximo uma casa decimal para a expectativa de vida")
+                return render_template('possivel.html', erro_expectativa="Digite um número maior que zero com no máximo uma casa decimal para a expectativa de vida", form_data=request.form)
             
             expec_vida = int(expec_vida)
 
             if not reserva:
-                return render_template('possivel.html', erro_expectativa="Digite um número maior que zero com no máximo uma casa decimal para a Reserva")
+                return render_template('possivel.html', erro_reserva="Digite um número maior que zero com no máximo uma casa decimal para a Reserva", form_data=request.form)
             
             reserva = float(reserva)
 
             if not inss:
-                return render_template('possivel.html', erro_beneficio="Digite um número maior que zero com no máximo uma casa decimal para a Inss")
+                return render_template('possivel.html', erro_beneficio="Digite um número maior que zero com no máximo uma casa decimal para a Inss", form_data=request.form)
             
             inss = float(inss)
 
             if not poupanca_possivel:
-                return render_template('possivel.html', erro_poupanca="Digite um número maior que zero com no máximo uma casa decimal para a poupança")
+                return render_template('possivel.html', erro_poupanca="Digite um número maior que zero com no máximo uma casa decimal para a poupança", form_data=request.form)
             poupanca_possivel = float(poupanca_possivel)
 
             if not ret_invest_anual:
-                return render_template('possivel.html', erro_taxa="Por favor, insira um valor valido no investimento anual")
+                return render_template('possivel.html', erro_taxa="Por favor, insira um valor valido no investimento anual", form_data=request.form)
 
 
             # Validações
@@ -3116,7 +3116,7 @@ def criar_grafico_rendaPossivel():
                                     erro_reserva=erro_reserva, 
                                     erro_taxa=erro_taxa, 
                                     erro_beneficio=erro_beneficio, 
-                                    erro_poupanca=erro_poupanca)
+                                    erro_poupanca=erro_poupanca, form_data=request.form)
 
             # Convertendo as entradas válidas para o tipo correto
             idade_inicial = int(idade_inicial)
@@ -3308,15 +3308,9 @@ def criar_grafico_rendaPossivel():
             
 
             # Enviar o gráfico codificado para o frontend
-            return render_template('possivel.html', graph_base64=graph_base64, idade_inicial=idade_inicial, 
-                                       idade_aposentadoria=idade_aposentadoria, 
-                                       expec_vida=expec_vida, 
-                                       reserva=reserva, 
-                                       inss=inss, 
-                                       poupanca_possivel=poupanca_possivel, 
-                                       ret_invest_anual=ret_invest_anual)
+            return render_template('possivel.html', graph_base64=graph_base64, form_data=request.form)
         
-        return redirect(url_for('possivel'))
+        return render_template('possivel.html')
     except Exception as err:
         print(err)
         return render_template('desejada.html', error_server="Tivemos um problema nos nossos servidores, por favor, entre em contato imediatamente com o suporte")
