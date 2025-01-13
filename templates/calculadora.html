@@ -63,7 +63,7 @@
         
                 <div class="form-group" style="margin-top: 20px;">
                     <label for="salario_bruto">Salário Bruto Atual (R$):</label>
-                    <input type="number" name="salario_bruto" id="salario_bruto" min="0" required value="{{ slbr if slbr else 0 }}" placeholder="Digite um número inteiro maior OU igual a ZERO">
+                    <input type="text" name="salario_bruto" id="salario_bruto" required value="{{ slbr if slbr else 0 }}" placeholder="Digite um número inteiro maior OU igual a ZERO">
                 </div>
                 {% if error_salario %}
                 <div class="error-message">
@@ -111,7 +111,7 @@
                       <li data-value="1">Masculino</li>
                       <li data-value="0">Feminino</li>
                     </ul>
-                    <input type="hidden" name="sexo" id="sexo" required>
+                    <input type="hidden" name="sexo" id="sexo">
                 </div>
 
                 {% if error_sexo %}
@@ -122,7 +122,7 @@
         
                 <div class="form-group" style="margin-top: 20px;">
                     <label for="salario_bruto">Salário Bruto Atual (R$):</label>
-                    <input type="number" name="salario_bruto" id="salario_bruto" min="0" required value="0" placeholder="Digite um número inteiro maior OU igual a ZERO">
+                    <input type="text" name="salario_bruto" id="salario_bruto" min="0" value="0" placeholder="Digite um número inteiro maior OU igual a ZERO">
                 </div>
                 {% if error_salario %}
                 <div class="error-message">
@@ -187,7 +187,6 @@
             </table>
         </div>        
         {% endif %}
-
         
         <div class="titulo">
             <h4>Duvidas! CONSULTE nossa AI clicando em ícone nesta página! </h4>
@@ -216,17 +215,33 @@
     </footer>
     
     <script>
-        document.querySelectorAll('.options li').forEach(function(item) {
-            item.addEventListener('click', function() {
-                const value = item.getAttribute('data-value');
-                const displayText = item.innerText;
-                
-                // Atualiza o valor selecionado
-                document.querySelector('.selected').innerText = displayText;
-                document.querySelector('#sexo').value = value;
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectedSexo = document.querySelector('#sexo').value;
+            const selectedTextElement = document.querySelector('.selected');
+    
+            // Atualiza o texto exibido com base no valor atual de #sexo
+            if (selectedSexo === '1') {
+                selectedTextElement.innerText = 'Masculino';
+            } else if (selectedSexo === '0') {
+                selectedTextElement.innerText = 'Feminino';
+            } else {
+                selectedTextElement.innerText = 'PREENCHER CAMPO SEXO';
+            }
+    
+            // Adiciona o evento de clique para cada opção de sexo
+            document.querySelectorAll('.options li').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const value = item.getAttribute('data-value');
+                    const displayText = item.innerText;
+                    
+                    // Atualiza o valor selecionado
+                    selectedTextElement.innerText = displayText;
+                    document.querySelector('#sexo').value = value;
+                });
             });
         });
     </script>
+    
 </body>
 </html>
 

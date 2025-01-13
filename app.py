@@ -30,12 +30,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-def setup_locale():
-    try:
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    except locale.Error:
-        print("Locale not supported")
-
 # Configuração de linguagem do Back-end
 app.config['BABEL_DEFAULT_LOCALE'] = 'pt_BR'
 babel = Babel(app)
@@ -1174,13 +1168,13 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         #LOCALIZA A DATA DE APOSENTADORIA PROGRESSIVA
         if Regprg==1:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_prg = LPS['comp'].dt.strftime('%b/%Y').iloc[0].capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por progressiva:", dt_ap_prg)
         else:
             #nao faz sentido, so p dar vazao ao fluxo
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_prg = prgv['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
 
@@ -1409,17 +1403,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         if pdg100['AdicDt'].sum() == 0 and Reg100==1:
             if pdg100.loc[CARid - 1, 'comp'] >= mes_idade_final:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
                 dt_ap_100 = pdg100.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("data por pedagio100:", dt_ap_100)
             else:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
                 dt_ap_100 = mes_idade_final.strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("Data por pedagio100:", dt_ap_100)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_100 = pdg100['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data carencia e idade 100 é:", dt_ap_100)
@@ -1504,17 +1498,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         if pdg50['AdicDt'].sum() == 0 and Reg50==1:
             if pdg50.loc[CARid - 1, 'comp'] >= mes_idade_final:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
                 dt_ap_50 = pdg50.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("data por pedagio50:", dt_ap_50)
             else:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
                 dt_ap_50 = mes_idade_final.strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 print("Data por pedagio50:", dt_ap_50)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_50 = pdg50['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
 
@@ -1746,17 +1740,17 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         if pdg1p5['AdicDt'].sum() == 0 and Reg100to50==1:
             if pdg1p5.loc[CARid - 1, 'comp'] >= mes_idade_final:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
                 dt_ap_1p5 = pdg1p5.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("data por pedagio100p50:", dt_ap_1p5)
             else:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
                 dt_ap_1p5 = mes_idade_final.strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("Data por pedagio1p5:", dt_ap_1p5)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_1p5 = pdg1p5['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data carencia e idade 100p50 é:", dt_ap_1p5)
@@ -2540,9 +2534,9 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         pdf_files = [filiado_pdf, vinculos_pdf, indicadores_pdf]
         pdf = merge_pdfs(pdf_files)
-        atntv_html = ATNTV.to_dict(orient="records")
-        print(atntv_html)
 
+        atntv_html = ATNTV.to_dict(orient="records")
+    
         return pdf, atntv_html
     
     except Exception as err:
@@ -3331,40 +3325,41 @@ def gerar_relatorio():
         salario_bruto = request.form['salario_bruto']
         button = request.form['submit-button']
 
-        print(sx)
-        print(salario_bruto)
-
-        if not sx:
-            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade')
+        if not sx or sx.strip() == "":
+            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade', sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
 
         # Verificações para o campo salario_bruto
-        if not salario_bruto:  # Verifica se o campo está vazio
-            error_salario = 'Digite um número inteiro maior ou igual a zero.'
-            return render_template('calculadora.html', error_salario=error_salario)
+        if not salario_bruto or salario_bruto.strip() == "":  # Verifica se o campo está vazio
+            error_salario = 'Digite um número inteiro maior ou igual a 1.'
+            return render_template('calculadora.html', error_salario=error_salario, sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
 
-        if not salario_bruto.isdigit():  # Verifica se contém apenas números inteiros positivos
-            error_salario = 'Digite um número inteiro maior ou igual a zero.'
-            return render_template('calculadora.html', error_salario=error_salario)
-
-        slbr = int(salario_bruto)
+        try:
+            # Tenta converter o salário bruto para float, permitindo valores decimais
+            slbr = float(salario_bruto)
+            if slbr < 1:
+                raise ValueError('O valor deve ser maior ou igual a 1.')
+        except ValueError:
+            error_salario = 'Digite um número inteiro maior ou igual a 1.'
+            return render_template('calculadora.html', error_salario=error_salario,
+                                   sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
 
         if slbr < 0:  # Verifica se o número é negativo
-            error_salario = 'Digite um número inteiro maior ou igual a zero.'
-            return render_template('calculadora.html', error_salario=error_salario)
+            error_salario = 'Digite um número inteiro maior ou igual a 1.'
+            return render_template('calculadora.html', error_salario=error_salario, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
 
         if n_clicks3 >= 0:
             # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
             if cnis_buffer.getbuffer().nbytes == 0:
-                error = 'Para o Cálculo do Benefício, selecione seu arquivo de CNIS no formato PDF clicando em "Clique&Selecione Arquivo CNIS" abaixo!'
-                return render_template('calculadora.html', error=error)
+                error = 'Para o Cálculo do Beneficio, selecione o seu arquivo de CNIS no formato PDF clicando no botão ‘Choose File’'
+                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
 
             if verifica_cnis(cnis_buffer) != 3:
                 error = 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
-                return render_template('calculadora.html', error=error)
+                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
 
             if sx is None:
                 error = 'Preencher sexo e clique novamente em "Calcular Benefício INSS" e aguarde...!'
-                return render_template('calculadora.html', error=error)
+                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
 
             pdf, atntv_html = criar_relat_pdf(sx, slbr, cnis_buffer)
 
@@ -3378,7 +3373,7 @@ def gerar_relatorio():
     except Exception as e:
         app.logger.error(f"Error occurred: {str(e)}")
         error = 'Ocorreu um erro ao tentar gerar seu PDF, por favor, verifique seu CNIS.'
-        return render_template('calculadora.html', error=error)
+        return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
 
 
 def send_email(name, email, password):
@@ -3512,5 +3507,4 @@ def validar_poupanca_mensal(poupanca):
 
 
 if __name__ == '__main__':
-    setup_locale()
     app.run(debug=True)
