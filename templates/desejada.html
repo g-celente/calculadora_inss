@@ -172,7 +172,7 @@
                     {% endif %}
                     
                     <label for="id_tx">Taxa real ano (%):</label>
-                    <input type="text" id="id_tx" name="id_tx">
+                    <input type="text" id="id_tx" name="id_tx" value="4">
                     
                     {% if error_taxa %}
                     <div class="error-message">
@@ -200,7 +200,7 @@
                     <div class="button-class" style="display: flex;">
                         <button type="submit" name="submit-button" value="1" id="submit-button1">CÁLCULO Renda Desejada</button>
                         <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
-                        <p style="margin-left: 20px; color: #555555;">O download do relatório é automático - clique e aguarde alguns instantes</p>
+                        <p style="margin-left: 20px; color: #555555;">Desejando o download com o resultado do CÁLCULO, acione o botão ‘Gerar PDF’</p>
                     </div>
     
                     {% if erro_server %}

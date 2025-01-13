@@ -63,7 +63,7 @@
         
                 <div class="form-group" style="margin-top: 20px;">
                     <label for="salario_bruto">Salário Bruto Atual (R$):</label>
-                    <input type="text" name="salario_bruto" id="salario_bruto" required value="{{ slbr if slbr else 0 }}" placeholder="Digite um número inteiro maior OU igual a ZERO">
+                    <input type="text" name="salario_bruto" id="salario_bruto"  value="{{ slbr if slbr else 0 }}" placeholder="Digite um número inteiro maior OU igual a ZERO">
                 </div>
                 {% if error_salario %}
                 <div class="error-message">
@@ -122,7 +122,7 @@
         
                 <div class="form-group" style="margin-top: 20px;">
                     <label for="salario_bruto">Salário Bruto Atual (R$):</label>
-                    <input type="text" name="salario_bruto" id="salario_bruto" min="0" value="0" placeholder="Digite um número inteiro maior OU igual a ZERO">
+                    <input type="text" name="salario_bruto" id="salario_bruto" value="0" placeholder="Digite um número inteiro maior OU igual a ZERO">
                 </div>
                 {% if error_salario %}
                 <div class="error-message">

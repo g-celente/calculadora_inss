@@ -499,17 +499,16 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         if IDADE['AdicDt'].sum() == 0:
             if IDADE.loc[CARid - 1, 'comp'] >= mes_idade_final:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+
                 dt_ap_id = IDADE.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("data por carencia:", dt_ap_id)
             else:
-                locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+
                 dt_ap_id = mes_idade_final.strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("Data por idade:", dt_ap_id)
         else:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_id = IDADE['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data carencia e idade 'comp' é:", dt_ap_id)
@@ -892,13 +891,11 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         #LOCALIZA A DATA DE APOSENTADORIA POR PONTOS
         if Regptos==1:
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_pt = LPS['comp'].dt.strftime('%b/%Y').iloc[0].capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por pontos:", dt_ap_pt)
         else:
             #nao faz sentido, so p dar vasao ao fluxo e a variavel recever ALGUM VALOR...
-            locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
             dt_ap_pt = pts['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data carencia e idade 'comp' é:", dt_ap_pt)
@@ -1168,13 +1165,11 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         #LOCALIZA A DATA DE APOSENTADORIA PROGRESSIVA
         if Regprg==1:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_prg = LPS['comp'].dt.strftime('%b/%Y').iloc[0].capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("Data por progressiva:", dt_ap_prg)
         else:
             #nao faz sentido, so p dar vazao ao fluxo
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_prg = prgv['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
 
@@ -1403,17 +1398,16 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         if pdg100['AdicDt'].sum() == 0 and Reg100==1:
             if pdg100.loc[CARid - 1, 'comp'] >= mes_idade_final:
-                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
                 dt_ap_100 = pdg100.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("data por pedagio100:", dt_ap_100)
             else:
-                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
                 dt_ap_100 = mes_idade_final.strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("Data por pedagio100:", dt_ap_100)
         else:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_100 = pdg100['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data carencia e idade 100 é:", dt_ap_100)
@@ -1498,17 +1492,16 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         if pdg50['AdicDt'].sum() == 0 and Reg50==1:
             if pdg50.loc[CARid - 1, 'comp'] >= mes_idade_final:
-                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
                 dt_ap_50 = pdg50.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("data por pedagio50:", dt_ap_50)
             else:
-                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
                 dt_ap_50 = mes_idade_final.strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 print("Data por pedagio50:", dt_ap_50)
         else:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_50 = pdg50['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
 
@@ -1740,17 +1733,16 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
 
         if pdg1p5['AdicDt'].sum() == 0 and Reg100to50==1:
             if pdg1p5.loc[CARid - 1, 'comp'] >= mes_idade_final:
-                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
                 dt_ap_1p5 = pdg1p5.loc[CARid - 1, 'comp'].strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("data por pedagio100p50:", dt_ap_1p5)
             else:
-                locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
                 dt_ap_1p5 = mes_idade_final.strftime('%b/%Y').capitalize()
                 locale.setlocale(locale.LC_TIME, '')
                 #print("Data por pedagio1p5:", dt_ap_1p5)
         else:
-            locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             dt_ap_1p5 = pdg1p5['comp'].max().strftime('%b/%Y').capitalize()
             locale.setlocale(locale.LC_TIME, '')
             #print("data carencia e idade 100p50 é:", dt_ap_1p5)
@@ -3028,7 +3020,7 @@ def criar_grafico_rendaDesejada():
                 graph = io.BytesIO()
                 plt.savefig(graph, format='pdf', bbox_inches='tight')
                 graph.seek(0)
-                return send_file(graph, as_attachment=True, download_name='GráficoPossível.pdf')
+                return send_file(graph, as_attachment=True, download_name='GráficoDesejada.pdf')
             
             img = io.BytesIO()
             plt.savefig(img, format='png', bbox_inches='tight')
@@ -3061,36 +3053,36 @@ def criar_grafico_rendaPossivel():
             button = request.form['submit-button']
 
             if not idade_inicial:
-                return render_template('possivel.html', erro_idade_inicial="Digite um número maior que zero com no máximo uma casa decimal para a idade inicial", form_data=request.form)
+                return render_template('possivel.html', erro_idade_inicial="Digite um número inteiro entre 15 e 100 para a idade atual", form_data=request.form)
             
             idade_inicial = int(idade_inicial)
 
             if not idade_aposentadoria:
-                return render_template('possivel.html', erro_idade_aposentadoria="Digite um número maior que zero com no máximo uma casa decimal para a aposentadoria", form_data=request.form)
+                return render_template('possivel.html', erro_idade_aposentadoria="Digite um número inteiro maior que a idade atual para aposentadoria", form_data=request.form)
 
             idade_aposentadoria = int(idade_aposentadoria)
 
             if not expec_vida:
-                return render_template('possivel.html', erro_expectativa="Digite um número maior que zero com no máximo uma casa decimal para a expectativa de vida", form_data=request.form)
+                return render_template('possivel.html', erro_expectativa="Digite um número inteiro maior que a idade de aposentadoria para a expectativa de vida", form_data=request.form)
             
             expec_vida = int(expec_vida)
 
             if not reserva:
-                return render_template('possivel.html', erro_reserva="Digite um número maior que zero com no máximo uma casa decimal para a Reserva", form_data=request.form)
+                return render_template('possivel.html', erro_reserva="Digite um número inteiro maior ou igual a zero para a reserva financeira", form_data=request.form)
             
             reserva = float(reserva)
 
             if not inss:
-                return render_template('possivel.html', erro_beneficio="Digite um número maior que zero com no máximo uma casa decimal para a Inss", form_data=request.form)
+                return render_template('possivel.html', erro_beneficio="Digite um número inteiro maior ou igual a zero para o benefício esperado do INSS", form_data=request.form)
             
             inss = float(inss)
 
             if not poupanca_possivel:
-                return render_template('possivel.html', erro_poupanca="Digite um número maior que zero com no máximo uma casa decimal para a poupança", form_data=request.form)
+                return render_template('possivel.html', erro_poupanca="Digite um número inteiro maior que zero para a poupança mensal possível", form_data=request.form)
             poupanca_possivel = float(poupanca_possivel)
 
             if not ret_invest_anual:
-                return render_template('possivel.html', erro_taxa="Por favor, insira um valor valido no investimento anual", form_data=request.form)
+                return render_template('possivel.html', erro_taxa="Digite um número MAIOR que zero com no máximo uma casa decimal ", form_data=request.form)
 
 
             # Validações
@@ -3475,13 +3467,13 @@ def validar_taxa_real(taxa_real):
     try:
         taxa_real = float(taxa_real)
         if taxa_real <= 0 or taxa_real >= 21:
-            return "Digite um número MAIOR que zero e MENOR que 20 com no máximo uma casa decimal para a taxa real anual"
+            return "Digite um número MAIOR que zero com no máximo uma casa decimal"
         
         # Verifica se há mais de uma casa decimal, mas aceita números inteiros
         if '.' in str(taxa_real) and len(str(taxa_real).split('.')[1]) > 1:
-            return "Digite um número maior que zero com no máximo uma casa decimal para a taxa real anual"
+            return "Digite um número MAIOR que zero com no máximo uma casa decimal"
     except ValueError:
-        return "Digite um número válido para a taxa real anual"
+        return "Digite um número MAIOR que zero com no máximo uma casa decimal"
     
     return None
 
