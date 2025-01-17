@@ -42,7 +42,7 @@
                 verificando o impacto no seu esforço de investimento.</p>
         </div>
 
-        {% if slbr and sx and cnis_file %}
+        {% if slbr or sx or cnis_file %}
         <div class="calculadora">
             <h2 style="color: #FF4500;">Calculadora de Renda da Previdência do INSS</h2>
             <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data" id="calculadora-form">

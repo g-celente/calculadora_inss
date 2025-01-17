@@ -3322,16 +3322,16 @@ def gerar_relatorio():
 
         # Verificações para o campo salario_bruto
         if not salario_bruto or salario_bruto.strip() == "":  # Verifica se o campo está vazio
-            error_salario = 'Digite um número inteiro maior ou igual a 1.'
+            error_salario = 'Digite um número inteiro maior ou igual a 0.'
             return render_template('calculadora.html', error_salario=error_salario, sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
 
         try:
             # Tenta converter o salário bruto para float, permitindo valores decimais
             slbr = float(salario_bruto)
-            if slbr < 1:
-                raise ValueError('O valor deve ser maior ou igual a 1.')
+            if slbr < 0:
+                raise ValueError('O valor deve ser maior ou igual a 0.')
         except ValueError:
-            error_salario = 'Digite um número inteiro maior ou igual a 1.'
+            error_salario = 'Digite um número inteiro maior ou igual a 0.'
             return render_template('calculadora.html', error_salario=error_salario,
                                    sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
 
