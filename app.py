@@ -3318,7 +3318,7 @@ def gerar_relatorio():
         button = request.form['submit-button']
 
         if not sx or sx.strip() == "":
-            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade', sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
+            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade', sx='3', slbr=salario_bruto, cnis_file=cnis_buffer)
 
         # Verificações para o campo salario_bruto
         if not salario_bruto or salario_bruto.strip() == "":  # Verifica se o campo está vazio
@@ -3327,7 +3327,7 @@ def gerar_relatorio():
 
         try:
             # Tenta converter o salário bruto para float, permitindo valores decimais
-            slbr = float(salario_bruto)
+            slbr = int(salario_bruto)
             if slbr < 0:
                 raise ValueError('O valor deve ser maior ou igual a 0.')
         except ValueError:
