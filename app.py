@@ -3342,7 +3342,7 @@ def gerar_relatorio():
         if n_clicks3 >= 0:
             # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
             if cnis_buffer.getbuffer().nbytes == 0:
-                error = 'Para o Cálculo do Beneficio, selecione o seu arquivo de CNIS no formato PDF clicando no botão ‘Choose File’'
+                error = 'Para Calcular Benefício ou Gerar PDF, selecione o seu arquivo de CNIS no formato PDF clicando no botão ‘Choose File’'
                 return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
 
             if verifica_cnis(cnis_buffer) != 3:
