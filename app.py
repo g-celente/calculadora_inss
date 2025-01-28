@@ -24,15 +24,10 @@ from flask_mail import Mail, Message
 import matplotlib.image as mpimg
 from reportlab.platypus import Image
 from dotenv import load_dotenv
-from flask_babel import Babel
 
 load_dotenv()
 
 app = Flask(__name__)
-
-# Configuração de linguagem do Back-end
-app.config['BABEL_DEFAULT_LOCALE'] = 'pt_BR'
-babel = Babel(app)
 
 # Configuração do banco de dados SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
@@ -3318,12 +3313,12 @@ def gerar_relatorio():
         button = request.form['submit-button']
 
         if not sx or sx.strip() == "":
-            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade', sx='3', slbr=salario_bruto, cnis_file=cnis_buffer)
+            return render_template('calculadora.html', error_sexo='Por favor, escolha um dos sexos para dar continuidade', sx='3', slbr=salario_bruto)
 
         # Verificações para o campo salario_bruto
         if not salario_bruto or salario_bruto.strip() == "":  # Verifica se o campo está vazio
             error_salario = 'Digite um número inteiro maior ou igual a 0.'
-            return render_template('calculadora.html', error_salario=error_salario, sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
+            return render_template('calculadora.html', error_salario=error_salario, sx=sx, slbr=salario_bruto)
 
         try:
             # Tenta converter o salário bruto para float, permitindo valores decimais
@@ -3333,25 +3328,25 @@ def gerar_relatorio():
         except ValueError:
             error_salario = 'Digite um número inteiro maior ou igual a 0.'
             return render_template('calculadora.html', error_salario=error_salario,
-                                   sx=sx, slbr=salario_bruto, cnis_file=cnis_buffer)
+                                   sx=sx, slbr=salario_bruto)
 
         if slbr < 0:  # Verifica se o número é negativo
             error_salario = 'Digite um número inteiro maior ou igual a 1.'
-            return render_template('calculadora.html', error_salario=error_salario, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
+            return render_template('calculadora.html', error_salario=error_salario, sx=sx, slbr=slbr)
 
         if n_clicks3 >= 0:
             # Verifica se o arquivo CNIS.pdf existe no caminho absoluto
             if cnis_buffer.getbuffer().nbytes == 0:
                 error = 'Para Calcular Benefício ou Gerar PDF, selecione o seu arquivo de CNIS no formato PDF clicando no botão ‘Choose File’'
-                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
+                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr)
 
             if verifica_cnis(cnis_buffer) != 3:
                 error = 'O CNIS carregado não está correto. Verifique o arquivo PDF e carregue novamente...!'
-                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
+                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr)
 
             if sx is None:
                 error = 'Preencher sexo e clique novamente em "Calcular Benefício INSS" e aguarde...!'
-                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
+                return render_template('calculadora.html', error=error, sx=sx, slbr=slbr)
 
             pdf, atntv_html = criar_relat_pdf(sx, slbr, cnis_buffer)
 
@@ -3360,12 +3355,12 @@ def gerar_relatorio():
                 return send_file(pdf, as_attachment=True, download_name='RelatInss.pdf')
                         
             # Passa a tabela HTML para o template `calculadora.html`
-            return render_template('calculadora.html', atntv=atntv_html, pdf=pdf, sx=sx, cnis_file=cnis_buffer, slbr=slbr)
+            return render_template('calculadora.html', atntv=atntv_html, pdf=pdf, sx=sx, slbr=slbr)
 
     except Exception as e:
         app.logger.error(f"Error occurred: {str(e)}")
         error = 'Ocorreu um erro ao tentar gerar seu PDF, por favor, verifique seu CNIS.'
-        return render_template('calculadora.html', error=error, sx=sx, slbr=slbr, cnis_file=cnis_buffer)
+        return render_template('calculadora.html', error=error, sx=sx, slbr=slbr)
 
 
 def send_email(name, email, password):
