@@ -179,8 +179,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         import pdfplumber
         import re
 
-        pdf_path = cnis_path
-
         # Use pdfplumber para extrair texto e informações de layout
         with pdfplumber.open(pdf_path) as pdf:
             D_V = []#recebe pares datas&valores filtrados
@@ -1778,11 +1776,7 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
             ATNTV = pd.concat([ATNTV, new_row], ignore_index=True)
 
         #CRIA dataframe que encontra vinculos empregaticios e data ingresso inss
-
-        import re
-        import pdfplumber
-
-        pdf_path = cnis_path
+        
 
         # Cria um DataFrame vazio para armazenar os dados
         VCLS = pd.DataFrame(columns=['VÍNCULO'])
@@ -2194,7 +2188,6 @@ def criar_relat_pdf(SX,SLBRT, cnis_path):
         import pdfplumber
         import re
 
-        pdf_path = cnis_path
         padraoS = r'([A-Z]{3,}[A-Z0-9\-]*)\s'
         df_SGS = pd.DataFrame(columns=['Elemento'])  # Inicializa o DataFrame para armazenar elementos encontrados
 
