@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
+</head>
+<body>
+  <div class="login-view-container">
+    <div class="overlay"></div>
+    <div class="form-container">
+      <form action="{{ url_for('cadastroEmpresa') }}" class="form" style="margin-top: 100px;" method="post">
+        <div class="titulo">
+          <img src="/static/assets/GRP branding.LOGOMARCA.png" alt="" width="120" height="150">
+          <h2>Seja Bem Vindo a GRP!</h2>
+          <h4 style="text-align: center;">Cadastre-se usando o código da sua Empresa!</h4>
+          <div class="barra-horizontal"></div>
+        </div>
+        <div class="campo-input">
+            <label for="text">Nome:</label>
+            <input type="text" id="name" name="name" placeholder="Insira seu Nome" required>
+            <span id="error-message" class="error-message"></span>
+          </div>
+
+        <div class="campo-input">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" placeholder="Insira seu email" required>
+          <span id="error-message" class="error-message"></span>
+        </div>
+        <div class="campo-input">
+            <label for="codigo">Código Empresa:</label>
+            <input type="text" id="codigo" name="codigo" placeholder="Insira o código da sua empresa" required>
+            <span id="error-message" class="error-message"></span>
+        </div>
+        {% if error %}
+            <div class="error-message">
+                <strong style="color: red;">{{ error }}</strong>
+            </div>
+        {% endif %}
+        {% if error_empresa  %}
+            <div class="error-message">
+                <strong style="color: red;">{{ error_empresa }}</strong>
+            </div>
+        {% endif %}
+
+        <div class="campo-input">
+          <label for="password">Senha:</label>
+          <input type="password" id="password" name="password" placeholder="Insira sua senha" required>
+        </div>
+
+        <div class="esqueceu-senha">
+          <a href="{{ url_for('forgotPassword') }}">Esqueceu a senha?</a>
+        </div>
+
+        <button type="submit">
+          <span>Enviar</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

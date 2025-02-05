@@ -54,9 +54,14 @@ class User(db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(500), nullable=False)
 
-# Criar o banco de dados e as tabelas
-with app.app_context():
-    db.create_all()
+class Empresa(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(100), unique=True, nullable=False)
+    qtd_func = db.Column(db.Integer, nullable=False)
+    prazo = db.Column(db.Integer, nullable=False)
+    dt_inicio = db.Column(db.String(20), nullable=False)
+    nota = db.Column(db.String(200), nullable=False)
+    qtd_func_rest = db.Column(db.Integer, nullable=False)
 
 # Função de autenticação (para proteger rotas)
 def token_required(f):
@@ -2613,6 +2618,10 @@ def page_not_found(e):
     # Exibe uma página 404 personalizada ou redireciona para uma página desejada
     return render_template('404.html'), 404
 
+@app.route('/cadastro')
+def cadastro_empresa():
+    return render_template('auth/empresaCadastro.html')
+
 @app.route('/')
 @token_required
 def sobre():
@@ -3415,6 +3424,72 @@ def webhook():
     
     return jsonify(response), 200
 
+@app.route('/cadastro_empresa', methods=['POST'])
+def cadastroEmpresa():
+    name = request.form['name']
+    email = request.form['email']
+    password = request.form['password']
+    codigo = request.form['codigo']
+
+    empresa = Empresa.query.filter_by(login=codigo).first()
+
+    if not empresa:
+        error = 'Empresa não encontrada!'
+        return render_template('auth/empresaCadastro.html', error=error)
+
+    if empresa.qtd_func_rest <= 0:
+        error_empresa = 'O limite de acessos foi atingido!'
+        return render_template('auth/empresaCadastro.html', error_empresa=error_empresa)
+
+    hashed_password = generate_password_hash(password)
+
+    novo_usuario = User(name=name, email=email, password=hashed_password)
+    db.session.add(novo_usuario)
+
+    empresa.qtd_func_rest -= 1
+    db.session.commit()
+
+    return redirect(url_for('login'))
+
+from sqlalchemy.exc import IntegrityError
+
+def carregar_dados_excel():
+    """Lê a planilha e carrega os dados no banco"""
+    file_path = "./static/assets/arquivos/empresas.xlsx"
+
+    if not os.path.exists(file_path):
+        return
+
+    df = pd.read_excel(file_path)
+
+    for _, row in df.iterrows():
+        # Verificar se o login já existe
+        empresa_existente = Empresa.query.filter_by(login=row['LOGIN']).first()
+        
+        if empresa_existente:
+            print(f"Empresa com login {row['LOGIN']} já existe, pulando inserção.")
+            continue  # Pula para o próximo registro
+
+        empresa = Empresa(
+            login=row['LOGIN'],
+            qtd_func=row['QTDD FUNC'],
+            prazo=row['PRAZO'],
+            dt_inicio=row['DT INÍCIO'],
+            nota=row['NOTA'],
+            qtd_func_rest=row['QTDD FUNC']
+        )
+
+        db.session.add(empresa)
+
+    try:
+        db.session.commit()
+        print("Dados inseridos com sucesso")
+    except IntegrityError:
+        db.session.rollback()
+        print("Erro de integridade: possível duplicação de dados")
+
+
+
 def validar_idade_inicial(idade_inicial):
     try:
         idade_inicial = int(idade_inicial)
@@ -3487,4 +3562,7 @@ def validar_poupanca_mensal(poupanca):
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        carregar_dados_excel()
     app.run(debug=True)
