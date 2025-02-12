@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 import numpy as np
 from scipy.optimize import fminbound
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime, timedelta
 import base64
 import os
 from io import BytesIO
@@ -46,6 +46,8 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
 mail = Mail(app)
 
+EMPREGADOS_FILE = "./static/assets/arquivos/empregados.xlsx"
+EMPRESAS_FILE = "./static/assets/arquivos/empresas.xlsx"
 
 # Modelo de usuário
 class User(db.Model):
@@ -53,6 +55,7 @@ class User(db.Model):
     name = db.Column(db.String(200), nullable= False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(500), nullable=False)
+    empresa_id = db.Column(db.Integer, db.ForeignKey('empresa.id'), nullable=True)
 
 class Empresa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -62,7 +65,6 @@ class Empresa(db.Model):
     dt_inicio = db.Column(db.String(20), nullable=False)
     nota = db.Column(db.String(200), nullable=False)
     qtd_func_rest = db.Column(db.Integer, nullable=False)
-
 # Função de autenticação (para proteger rotas)
 def token_required(f):
     @wraps(f)
@@ -2582,16 +2584,29 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password, password):
-            token = jwt.encode({
-                'user_id': user.id,
-            }, app.config['SECRET_KEY'], algorithm='HS256')
-            response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
-            response.set_cookie('auth-token', token, httponly=True)
-            return response, 200  # Retorna um JSON com status 200
+            empresa = Empresa.query.filter_by(id=user.empresa_id).first()
+            
+            if empresa:
+                dias_restantes = verificar_acesso_empresa(empresa)
+
+                if dias_restantes > 0:
+                    # Empresa ainda tem dias de acesso
+                    token = jwt.encode({
+                        'user_id': user.id,
+                    }, app.config['SECRET_KEY'], algorithm='HS256')
+                    response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
+                    response.set_cookie('auth-token', token, httponly=True)
+                    return response, 200  # Retorna um JSON com status 200
+                else:
+                    # Acesso expirado
+                    return jsonify({'message': 'Acesso expirado. Entre em contato com o suporte.'}), 403
+            else:
+                return jsonify({'message': 'Empresa não encontrada.'}), 404
 
         return jsonify({'message': 'Credenciais inválidas.'}), 401
 
     return render_template('auth/login.html')
+
 
 @app.route('/calculadora')
 @token_required
@@ -3443,11 +3458,13 @@ def cadastroEmpresa():
 
     hashed_password = generate_password_hash(password)
 
-    novo_usuario = User(name=name, email=email, password=hashed_password)
+    novo_usuario = User(name=name, email=email, password=hashed_password, empresa_id = empresa.id)
     db.session.add(novo_usuario)
 
     empresa.qtd_func_rest -= 1
     db.session.commit()
+
+    registrar_usuario_excel(name, email, codigo)
 
     return redirect(url_for('login'))
 
@@ -3488,7 +3505,16 @@ def carregar_dados_excel():
         db.session.rollback()
         print("Erro de integridade: possível duplicação de dados")
 
-
+def registrar_usuario_excel(nome, email, codigo):
+    """Adiciona um novo usuário à planilha empregados.xlsx."""
+    if not os.path.exists(EMPREGADOS_FILE):
+        df = pd.DataFrame(columns=["Nome", "Email", "Empresa"])
+    else:
+        df = pd.read_excel(EMPREGADOS_FILE)
+    
+    novo_registro = pd.DataFrame({"Nome": [nome], "Email": [email], "Empresa": [codigo]})
+    df = pd.concat([df, novo_registro], ignore_index=True)
+    df.to_excel(EMPREGADOS_FILE, index=False)
 
 def validar_idade_inicial(idade_inicial):
     try:
@@ -3539,6 +3565,28 @@ def validar_taxa_real(taxa_real):
         return "Digite um número MAIOR que zero com no máximo uma casa decimal"
     
     return None
+
+
+def verificar_acesso_empresa(empresa):
+    """Verifica se a empresa ainda tem dias restantes de acesso, convertendo dt_inicio (string) para datetime."""
+    
+    # Convertendo a string `dt_inicio` para um objeto datetime
+    try:
+        data_inicio = datetime.strptime(empresa.dt_inicio, '%Y-%m-%d')  # Supondo o formato 'YYYY-MM-DD'
+    except ValueError:
+        # Caso o formato da string esteja incorreto, retorna que o acesso está expirado
+        return 0
+    
+    prazo = empresa.prazo  # Quantidade de dias contratados
+
+    # Calcula a data de expiração com base no prazo
+    data_expiracao = data_inicio + timedelta(days=prazo)
+
+    # Calcula a quantidade de dias restantes
+    dias_restantes = (data_expiracao - datetime.now()).days
+
+    # Verifica se ainda há dias restantes
+    return dias_restantes if dias_restantes > 0 else 0
 
 
 def validar_beneficio_inss(inss):
