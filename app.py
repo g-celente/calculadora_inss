@@ -3448,6 +3448,12 @@ def cadastroEmpresa():
 
     empresa = Empresa.query.filter_by(login=codigo).first()
 
+    user = User.query.filter_by(email=email).first()
+
+    if (user):
+        error = f"O usuário {email} já está cadastrado"
+        return render_template('aut/empresaCadastro.html', error=error)
+
     if not empresa:
         error = 'Empresa não encontrada!'
         return render_template('auth/empresaCadastro.html', error=error)
