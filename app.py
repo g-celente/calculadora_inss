@@ -3452,7 +3452,7 @@ def cadastroEmpresa():
 
     if (user):
         error = f"O usuário {email} já está cadastrado"
-        return render_template('aut/empresaCadastro.html', error=error)
+        return render_template('auth/empresaCadastro.html', error=error)
 
     if not empresa:
         error = 'Empresa não encontrada!'
