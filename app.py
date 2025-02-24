@@ -62,7 +62,7 @@ class Empresa(db.Model):
     login = db.Column(db.String(100), unique=True, nullable=False)
     qtd_func = db.Column(db.Integer, nullable=False)
     prazo = db.Column(db.Integer, nullable=False)
-    dt_inicio = db.Column(db.String(20), nullable=False)
+    dt_inicio = db.Column(db.String(200), nullable=False)
     nota = db.Column(db.String(200), nullable=False)
     qtd_func_rest = db.Column(db.Integer, nullable=False)
 # Função de autenticação (para proteger rotas)
@@ -3448,6 +3448,12 @@ def cadastroEmpresa():
 
     empresa = Empresa.query.filter_by(login=codigo).first()
 
+    dias_restantes = verificar_acesso_empresa(empresa)
+
+    if dias_restantes <= 0:
+        error = f"Acesso expirado. Já se passou 30 dias desde o contrato!"
+        return render_template('auth/empresaCadastro.html', error=error)
+
     user = User.query.filter_by(email=email).first()
 
     if (user):
@@ -3574,24 +3580,14 @@ def validar_taxa_real(taxa_real):
 
 
 def verificar_acesso_empresa(empresa):
-    """Verifica se a empresa ainda tem dias restantes de acesso, convertendo dt_inicio (string) para datetime."""
-    
-    # Convertendo a string `dt_inicio` para um objeto datetime
-    try:
-        data_inicio = datetime.strptime(empresa.dt_inicio, '%Y-%m-%d')  # Supondo o formato 'YYYY-MM-DD'
-    except ValueError:
-        # Caso o formato da string esteja incorreto, retorna que o acesso está expirado
-        return 0
-    
-    prazo = empresa.prazo  # Quantidade de dias contratados
+    # Converte a string para um objeto datetime
+    data_inicio = datetime.strptime(empresa.dt_inicio, "%Y-%m-%d %H:%M:%S")
+    # Calcula a data de expiração somando o prazo em dias
 
-    # Calcula a data de expiração com base no prazo
-    data_expiracao = data_inicio + timedelta(days=prazo)
+    data_expiracao = data_inicio + timedelta(days=empresa.prazo)
 
-    # Calcula a quantidade de dias restantes
+    # Calcula os dias restantes
     dias_restantes = (data_expiracao - datetime.now()).days
-
-    # Verifica se ainda há dias restantes
     return dias_restantes if dias_restantes > 0 else 0
 
 
