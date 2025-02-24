@@ -2601,7 +2601,12 @@ def login():
                     # Acesso expirado
                     return jsonify({'message': 'Acesso expirado. Entre em contato com o suporte.'}), 403
             else:
-                return jsonify({'message': 'Empresa não encontrada.'}), 404
+                token = jwt.encode({
+                        'user_id': user.id,
+                }, app.config['SECRET_KEY'], algorithm='HS256')
+                response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
+                response.set_cookie('auth-token', token, httponly=True)
+                return response, 200 
 
         return jsonify({'message': 'Credenciais inválidas.'}), 401
 
