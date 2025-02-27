@@ -2599,7 +2599,7 @@ def login():
                     return response, 200  # Retorna um JSON com status 200
                 else:
                     # Acesso expirado
-                    return jsonify({'message': 'Acesso expirado. Entre em contato com o suporte.'}), 403
+                    return jsonify({'message': 'Acesso expirado, prazo de utilização contratado finalizado.'}), 403
             else:
                 token = jwt.encode({
                         'user_id': user.id,
@@ -3456,7 +3456,7 @@ def cadastroEmpresa():
     dias_restantes = verificar_acesso_empresa(empresa)
 
     if dias_restantes <= 0:
-        error = f"Acesso expirado. Já se passou 30 dias desde o contrato!"
+        error = f"Acesso expirado, prazo de utilização contratado finalizado."
         return render_template('auth/empresaCadastro.html', error=error)
 
     user = User.query.filter_by(email=email).first()
