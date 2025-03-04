@@ -2589,7 +2589,7 @@ def login():
             if empresa:
                 dias_restantes = verificar_acesso_empresa(empresa)
 
-                if dias_restantes > 0:
+                if dias_restantes >= 0:
                     # Empresa ainda tem dias de acesso
                     token = jwt.encode({
                         'user_id': user.id,
@@ -3446,7 +3446,7 @@ def webhook():
 
 @app.route('/cadastro_empresa', methods=['POST'])
 def cadastroEmpresa():
-    carregar_dados_excel()
+    #carregar_dados_excel()
 
     name = request.form['name']
     email = request.form['email']
@@ -3457,7 +3457,7 @@ def cadastroEmpresa():
 
     dias_restantes = verificar_acesso_empresa(empresa)
 
-    if dias_restantes <= 0:
+    if dias_restantes < 0:
         error = f"Acesso expirado, prazo de utilização contratado finalizado."
         return render_template('auth/empresaCadastro.html', error=error)
 
@@ -3587,14 +3587,13 @@ def validar_taxa_real(taxa_real):
 
 
 def verificar_acesso_empresa(empresa):
-    # Converte a string para um objeto datetime
+
     data_inicio = datetime.strptime(empresa.dt_inicio, "%Y-%m-%d %H:%M:%S")
-    # Calcula a data de expiração somando o prazo em dias
 
     data_expiracao = data_inicio + timedelta(days=empresa.prazo)
 
-    # Calcula os dias restantes
     dias_restantes = (data_expiracao - datetime.now()).days
+
     return dias_restantes if dias_restantes > 0 else 0
 
 
@@ -3621,5 +3620,5 @@ def validar_poupanca_mensal(poupanca):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        carregar_dados_excel()
+        #carregar_dados_excel()
     app.run(debug=True)
