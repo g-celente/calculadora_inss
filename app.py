@@ -3446,7 +3446,7 @@ def webhook():
 
 @app.route('/cadastro_empresa', methods=['POST'])
 def cadastroEmpresa():
-    #carregar_dados_excel()
+    carregar_dados_excel()
 
     name = request.form['name']
     email = request.form['email']
