@@ -3457,6 +3457,8 @@ def cadastroEmpresa():
 
     dias_restantes = verificar_acesso_empresa(empresa)
 
+    print(dias_restantes)
+
     if dias_restantes < 0:
         error = f"Acesso expirado, prazo de utilização contratado finalizado."
         return render_template('auth/empresaCadastro.html', error=error)
@@ -3590,11 +3592,17 @@ def verificar_acesso_empresa(empresa):
 
     data_inicio = datetime.strptime(empresa.dt_inicio, "%Y-%m-%d %H:%M:%S")
 
+    print(data_inicio)
+
     data_expiracao = data_inicio + timedelta(days=empresa.prazo)
+
+    print(data_expiracao)
 
     dias_restantes = (data_expiracao - datetime.now()).days
 
-    return dias_restantes if dias_restantes > 0 else 0
+    print(dias_restantes)
+
+    return dias_restantes
 
 
 def validar_beneficio_inss(inss):
