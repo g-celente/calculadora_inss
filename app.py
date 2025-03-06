@@ -65,6 +65,12 @@ class Empresa(db.Model):
     dt_inicio = db.Column(db.String(200), nullable=False)
     nota = db.Column(db.String(200), nullable=False)
     qtd_func_rest = db.Column(db.Integer, nullable=False)
+
+class UserAdm(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(500), nullable=False)
+
 # Função de autenticação (para proteger rotas)
 def token_required(f):
     @wraps(f)
