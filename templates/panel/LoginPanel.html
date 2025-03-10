@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
+</head>
+<body>
+  <div class="login-view-container">
+    <div class="overlay"></div>
+    <div class="form-container">
+      <form id="login-form" class="form">
+        <div class="titulo">
+          <img src="/static/assets/GRP branding.LOGOMARCA.png" alt="" width="120" height="150">
+          <h2>Painel Administrativo GRP</h2>
+          <div class="barra-horizontal"></div>
+        </div>
+
+        <div class="campo-input">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Insira seu email" required>
+          <span id="error-message" class="error-message"></span>
+        </div>
+
+        <div class="campo-input">
+          <label for="password">Senha</label>
+          <input type="password" id="password" name="password" placeholder="Insira sua senha" required>
+        </div>
+
+        <div class="esqueceu-senha">
+          <a href="{{ url_for('forgotPassword') }}">Esqueceu a senha?</a>
+        </div>
+
+        <button type="submit">
+          <span>Enviar</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Incluindo o api.js como um script normal -->
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  
+  <script>
+    const form = document.getElementById('login-form');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();  // Evita o comportamento padrão do form
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // Envio do login para o backend
+      const response = await fetch('/panel/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.token;
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 7);
+
+        // Armazenar o token no cookie do navegador
+        document.cookie = `auth-token=${token};expires=${expirationDate.toUTCString()}; path=/`;
+        window.location.href = '/panel/dashboard'; // Redireciona após login bem-sucedido
+      } else {
+        const errorMessage = await response.json();
+        const errorField = document.getElementById('error-message');
+        errorField.textContent = errorMessage.message;
+      }
+    });
+</script>
+</body>
+</html>

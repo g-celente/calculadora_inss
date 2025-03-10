@@ -86,6 +86,20 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def panel_token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('auth-token')
+
+        if not token:
+            return redirect(url_for('panelLogin'))
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        except:
+            return redirect(url_for('panelLogin'))
+        return f(*args, **kwargs)
+    return decorated
+
 def criar_relat_pdf(SX,SLBRT, cnis_path):
 
     try:
@@ -3496,6 +3510,107 @@ def cadastroEmpresa():
     return redirect(url_for('login'))
 
 from sqlalchemy.exc import IntegrityError
+
+@app.route('/panel/login', methods=['GET', 'POST'])
+def panelLogin():
+    token = request.cookies.get('auth-token')
+
+    if token:
+        return render_template('calculadora.html')
+
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = UserAdm.query.filter_by(email=email).first()
+
+        if user and check_password_hash(user.password, password):
+            token = jwt.encode({
+                    'user_id': user.id,
+            }, app.config['SECRET_KEY'], algorithm='HS256')
+            response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
+            response.set_cookie('auth-token', token, httponly=True)
+            return response, 200 
+
+        return jsonify({'message': 'Credenciais inválidas.'}), 401
+
+    return render_template('panel/LoginPanel.html')
+
+@app.route('/panel/register', methods=['POST'])
+def registerPanel():
+    data = request.json
+
+    email = data.get('email')
+    password = data.get('password')
+
+    hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+    user = UserAdm.query.filter_by(email=email).first()
+
+    if (user):
+        return {"status": "erro", "message": "Usuário já registrado"}
+    
+    new_user = UserAdm(email=email, password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return {"status": "success", "message": "Usuário registrado com sucesso"}
+
+@panel_token_required
+@app.route('/panel/dashboard')
+def get_users():
+    # Consulta para obter usuários que possuem empresa associada
+    users_with_empresa = db.session.query(User, Empresa)\
+        .join(Empresa, User.empresa_id == Empresa.id)\
+        .all()
+    
+    # Renderiza a página HTML passando a lista de usuários e suas empresas
+    return render_template('panel/HomePanel.html', users_with_empresa=users_with_empresa)
+
+@panel_token_required
+@app.route('/panel/export_excel')
+def export_excel():
+    
+    users_with_empresa = db.session.query(User, Empresa).join(Empresa).all()
+
+    data = []
+    for user, empresa in users_with_empresa:
+        data.append({
+            'ID': user.id,
+            'Nome de Usuário': user.name,
+            'Email': user.email,
+            'Empresa': empresa.login,
+            'Nota': empresa.nota
+        })
+
+    df = pd.DataFrame(data)
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Usuários')
+
+    output.seek(0)
+
+    return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name='empregados.xlsx')
+
+@app.route('/panel/users/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    # Buscar o usuário pelo ID
+    user = User.query.get_or_404(user_id)
+
+    try:
+        # Excluir o usuário do banco de dados
+        db.session.delete(user)
+        db.session.commit()
+
+        # Exibir uma mensagem de sucesso
+        flash(f'Usuário {user.name} foi excluído com sucesso!', 'success')
+    except Exception as e:
+        # Em caso de erro, fazer rollback e exibir uma mensagem de erro
+        db.session.rollback()
+        flash(f'Ocorreu um erro ao tentar excluir o usuário: {str(e)}', 'error')
+
+    # Redirecionar de volta à página de usuários (ou outra página desejada)
+    return redirect(url_for('get_users'))
 
 def carregar_dados_excel():
     """Lê a planilha e carrega os dados no banco"""
