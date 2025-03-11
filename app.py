@@ -3516,7 +3516,7 @@ def panelLogin():
     token = request.cookies.get('auth-token')
 
     if token:
-        return render_template('calculadora.html')
+        return render_template('panel/HomePanel.html')
 
     if request.method == 'POST':
         email = request.form['email']
