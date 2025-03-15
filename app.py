@@ -3477,8 +3477,6 @@ def cadastroEmpresa():
 
     dias_restantes = verificar_acesso_empresa(empresa)
 
-    print(dias_restantes)
-
     if dias_restantes < 0:
         error = f"Acesso expirado, prazo de utilização contratado finalizado."
         return render_template('auth/empresaCadastro.html', error=error)
@@ -3490,7 +3488,7 @@ def cadastroEmpresa():
         return render_template('auth/empresaCadastro.html', error=error)
 
     if not empresa:
-        error = 'Empresa não encontrada!'
+        error = 'Verifique o código da sua empresa digitado'
         return render_template('auth/empresaCadastro.html', error=error)
 
     if empresa.qtd_func_rest <= 0:
