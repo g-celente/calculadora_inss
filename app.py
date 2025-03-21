@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
@@ -65,6 +66,8 @@ class Empresa(db.Model):
     dt_inicio = db.Column(db.String(200), nullable=False)
     nota = db.Column(db.String(200), nullable=False)
     qtd_func_rest = db.Column(db.Integer, nullable=False)
+
+    users = relationship('User', backref='empresa', cascade='all, delete-orphan')
 
 class UserAdm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -2660,6 +2663,7 @@ def page_not_found(e):
 
 @app.route('/cadastro')
 def cadastro_empresa():
+    carregar_dados_excel()
     return render_template('auth/empresaCadastro.html')
 
 @app.route('/')
@@ -3466,7 +3470,6 @@ def webhook():
 
 @app.route('/cadastro_empresa', methods=['POST'])
 def cadastroEmpresa():
-    carregar_dados_excel()
 
     name = request.form['name']
     email = request.form['email']
@@ -3477,7 +3480,7 @@ def cadastroEmpresa():
 
     dias_restantes = verificar_acesso_empresa(empresa)
 
-    if dias_restantes < 0:
+    if dias_restantes <= -1:
         error = f"Acesso expirado, prazo de utilização contratado finalizado."
         return render_template('auth/empresaCadastro.html', error=error)
 
@@ -3502,8 +3505,6 @@ def cadastroEmpresa():
 
     empresa.qtd_func_rest -= 1
     db.session.commit()
-
-    registrar_usuario_excel(name, email, codigo)
 
     return redirect(url_for('login'))
 
@@ -3611,7 +3612,7 @@ def delete_user(user_id):
     return redirect(url_for('get_users'))
 
 def carregar_dados_excel():
-    """Lê a planilha e carrega os dados no banco"""
+    """Lê a planilha e carrega os dados no banco, excluindo empresas e usuários com login expirado"""
     file_path = "./static/assets/arquivos/empresas.xlsx"
 
     if not os.path.exists(file_path):
@@ -3622,11 +3623,19 @@ def carregar_dados_excel():
     for _, row in df.iterrows():
         # Verificar se o login já existe
         empresa_existente = Empresa.query.filter_by(login=row['LOGIN']).first()
-        
+
         if empresa_existente:
-            print(f"Empresa com login {row['LOGIN']} já existe, pulando inserção.")
+            # Verificar se o login está expirado
+            if verificar_acesso_empresa(empresa_existente) < 0:
+                # Login expirado, excluir empresa e seus usuários
+                excluir_empresa_e_usuarios(empresa_existente)
             continue  # Pula para o próximo registro
 
+        # Verificar se a nova empresa já está vencida
+        if verificar_expiracao_nova_empresa(row['DT INÍCIO'], row['PRAZO']) < 0:
+            continue  # Pula para o próximo registro
+
+        # Adicionar nova empresa, pois ela não está vencida
         empresa = Empresa(
             login=row['LOGIN'],
             qtd_func=row['QTDD FUNC'],
@@ -3640,21 +3649,32 @@ def carregar_dados_excel():
 
     try:
         db.session.commit()
-        print("Dados inseridos com sucesso")
     except IntegrityError:
         db.session.rollback()
-        print("Erro de integridade: possível duplicação de dados")
 
-def registrar_usuario_excel(nome, email, codigo):
-    """Adiciona um novo usuário à planilha empregados.xlsx."""
-    if not os.path.exists(EMPREGADOS_FILE):
-        df = pd.DataFrame(columns=["Nome", "Email", "Empresa"])
-    else:
-        df = pd.read_excel(EMPREGADOS_FILE)
+def verificar_expiracao_nova_empresa(data_inicio, prazo):
+    """Verifica se a nova empresa tem prazo vencido antes de cadastrar"""
+    # Se o dado for do tipo Pandas Timestamp, converter para datetime nativo
+    if isinstance(data_inicio, pd.Timestamp):
+        data_inicio = data_inicio.to_pydatetime()
+
+    # Calcular a data de expiração
+    data_expiracao = data_inicio + timedelta(days=prazo)
+    # Calcular quantos dias restam até a expiração
+    dias_restantes = (data_expiracao - datetime.now()).days
+
+    return dias_restantes
+
+def excluir_empresa_e_usuarios(empresa):
+    """Exclui a empresa e todos os usuários relacionados"""
+    # Excluir usuários da empresa
+    usuarios = User.query.filter_by(empresa_id=empresa.id).all()
+    for usuario in usuarios:
+        db.session.delete(usuario)
     
-    novo_registro = pd.DataFrame({"Nome": [nome], "Email": [email], "Empresa": [codigo]})
-    df = pd.concat([df, novo_registro], ignore_index=True)
-    df.to_excel(EMPREGADOS_FILE, index=False)
+    # Excluir a empresa
+    db.session.delete(empresa)
+    db.session.commit()
 
 def validar_idade_inicial(idade_inicial):
     try:
