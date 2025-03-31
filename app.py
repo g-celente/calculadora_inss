@@ -3478,6 +3478,10 @@ def cadastroEmpresa():
 
     empresa = Empresa.query.filter_by(login=codigo).first()
 
+    if not empresa:
+        error = 'Verifique o código da sua empresa digitado'
+        return render_template('auth/empresaCadastro.html', error=error)
+
     dias_restantes = verificar_acesso_empresa(empresa)
 
     if dias_restantes <= -1:
@@ -3490,9 +3494,6 @@ def cadastroEmpresa():
         error = f"O usuário {email} já está cadastrado"
         return render_template('auth/empresaCadastro.html', error=error)
 
-    if not empresa:
-        error = 'Verifique o código da sua empresa digitado'
-        return render_template('auth/empresaCadastro.html', error=error)
 
     if empresa.qtd_func_rest <= 0:
         error_empresa = 'O limite de acessos foi atingido!'
