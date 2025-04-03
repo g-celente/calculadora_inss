@@ -2631,7 +2631,7 @@ def login():
                 response.set_cookie('auth-token', token, httponly=True)
                 return response, 200 
 
-        return jsonify({'message': 'Credenciais inválidas.'}), 401
+        return jsonify({'message': 'Verificar email/senha digitados E prazo de validade de uso contratado!'}), 401
 
     return render_template('auth/login.html')
 
@@ -2752,7 +2752,7 @@ def forgotPassword():
         user = User.query.filter_by(email=email).first()
 
         if not user:
-            error_email = 'Email não cadastrado no sistema'
+            error_email = 'Email não cadastrado OU prazo contratado de uso expirado !”'
             return render_template('auth/resetPassword.html', error_email=error_email)
         
         newPassword = request.form['password']
@@ -3479,7 +3479,7 @@ def cadastroEmpresa():
     empresa = Empresa.query.filter_by(login=codigo).first()
 
     if not empresa:
-        error = 'Verifique o código da sua empresa digitado'
+        error = 'Verificar código da empresa digitado E prazo de validade de uso contratado!'
         return render_template('auth/empresaCadastro.html', error=error)
 
     dias_restantes = verificar_acesso_empresa(empresa)
