@@ -3616,7 +3616,10 @@ def carregar_dados_excel():
     """Lê a planilha e carrega os dados no banco, excluindo empresas e usuários com login expirado"""
     file_path = "./static/assets/arquivos/empresas.xlsx"
 
+    print("Carregando Dados")
+
     if not os.path.exists(file_path):
+        print("planilha não econtrada")
         return
 
     df = pd.read_excel(file_path)
@@ -3646,8 +3649,9 @@ def carregar_dados_excel():
             qtd_func_rest=row['QTDD FUNC']
         )
 
+        print("Dados de empresas Carregados")
         db.session.add(empresa)
-
+        
     try:
         db.session.commit()
     except IntegrityError:
