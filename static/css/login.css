@@ -1,116 +1,195 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Open Sans", sans-serif;
-  }
-  
-  body {
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    padding: 20px;
-    background-image: url(../assets/imagem-fundo.png) ;
-    background-size: cover;
-    background-position: 50%;
-  }
-  .form-container {
-    z-index: 2;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    padding: 40px;
-    border-style: solid;
-    border-radius: 30px;
-    border-color: #f87842;
-    width: 400px; /* Fundo completamente transparente */
-    backdrop-filter: blur(3px);
-    z-index: 2;
-  }
-  
-  h1 {
-    font-size: 24px;
-  }
-  
-  input {
-    padding: 10px 15px;
-    border-radius: 10px;
-    border: none;
-    background-color: #f1f1f1;
-  }
-  
-  button {
-    padding: 10px 15px;
-    border-radius: 30px;
-    border: none;
-    background-image: linear-gradient(#ff4500, #ff4500);
-    border: solid 1px #ff4500;
-    border-right-width: 4px;
-    border-bottom-width: 4px;
-    color: white;
-    text-transform: uppercase;
-    font-weight: 700;
-    align-self: center;
-    width: 160px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Open Sans", sans-serif;
+}
 
+body {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  background-image: url(../assets/imagem-fundo.png);
+  background-size: cover;
+  background-position: 50%;
+}
+
+.form-container {
+  z-index: 2;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 40px;
+  border-style: solid;
+  border-radius: 30px;
+  border-color: #f87842;
+  width: 400px;
+  /* Fundo completamente transparente */
+  backdrop-filter: blur(3px);
+  z-index: 2;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+input {
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: none;
+  background-color: #f1f1f1;
+}
+
+button {
+  padding: 10px 15px;
+  border-radius: 30px;
+  border: none;
+  background-image: linear-gradient(#ff4500, #ff4500);
+  border: solid 1px #ff4500;
+  border-right-width: 4px;
+  border-bottom-width: 4px;
+  color: white;
+  text-transform: uppercase;
+  font-weight: 700;
+  align-self: center;
+  width: 160px;
+
+}
+
+button:hover {
+  background-image: linear-gradient(#1F2873, #1F2873);
+  border-color: #1F2873;
+  background-color: #1F2873;
+  /* Laranja mais escuro no hover */
+  transform: scale(1.08);
+}
+
+a {
+  color: rgb(0, 174, 255);
+  font-weight: 500;
+}
+
+.titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+  align-items: center;
+}
+
+.barra-horizontal {
+  background-color: #f87842;
+  height: 5px;
+  width: 210px;
+}
+
+.campo-input {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkbox {
+  display: flex;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.esqueceu-senha {
+  text-align: center;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Cor preta com 50% de opacidade */
+  /* Coloca o overlay acima da imagem, mas abaixo do formulário */
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 20px;
   }
-  button:hover {
-    background-image: linear-gradient(#1F2873, #1F2873);
-    border-color: #1F2873;
-    background-color: #1F2873; /* Laranja mais escuro no hover */
-    transform: scale(1.08);
+
+  form {
+    width: 100%;
+    max-width: 100%;
+    padding: 25px;
+    gap: 20px;
   }
-  
-  a {
-    color: rgb(0, 174, 255);
-    font-weight: 500;
+
+  input,
+  button {
+    width: 100%;
   }
-  
-  .titulo {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .barra-horizontal {
-    background-color: #f87842;
-    height: 5px;
-    width: 210px;
-  }
-  
-  .campo-input {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  
+
   .checkbox {
-    display: flex;
-    gap: 5px;
-    font-size: 14px;
+    flex-wrap: wrap;
   }
-  
-  .esqueceu-senha {
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 0 10px;
+  }
+
+  form {
+    padding: 20px;
+    border-radius: 16px;
+    gap: 15px;
+  }
+
+  h1 {
+    font-size: 20px;
     text-align: center;
   }
-  
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Cor preta com 50% de opacidade */  /* Coloca o overlay acima da imagem, mas abaixo do formulário */
+
+  .barra-horizontal {
+    width: 160px;
+    height: 3px;
   }
-  
-  .error-message {
-    color: red;
+
+  input {
     font-size: 14px;
-    margin-top: 5px;
   }
+
+  button {
+    font-size: 14px;
+    padding: 10px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  form {
+    padding: 15px;
+    gap: 12px;
+  }
+
+  .checkbox {
+    font-size: 12px;
+    flex-direction: column;
+  }
+
+  .esqueceu-senha {
+    font-size: 13px;
+  }
+}

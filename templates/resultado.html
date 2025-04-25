@@ -6,6 +6,7 @@
     <title>Simulação INSS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         /* Estilização do centro da imagem */
         .center-container {
@@ -44,9 +45,13 @@
     <main>
         <header>
             <nav id="navbar">
-                <i class="fa-solid fa-burger" id="navicon">
-                    <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
-                </i>
+                <div class="nav-logo-container">
+                    <a href="{{ url_for('sobre') }}">
+                        <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo">
+                    </a>
+                    <button id="navicon" aria-label="Abrir menu" class="fa-solid fa-bars"
+                        style="font-size: 24px; background: none; border: none; color: white;"></button>
+                </div>
                 <ul id="nav_list">
                     <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
                     <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
@@ -91,5 +96,12 @@
             GRP 2024 © P&D DIGITAL LTDA. Todos os direitos reservados. CNPJ: 44.325.141/0001-50
         </div>
     </footer>
+
+    <script>
+        document.getElementById('navicon').addEventListener('click', function () {
+            document.getElementById('nav_list').classList.toggle('show');
+        });
+    </script>
+
 </body>
 </html>

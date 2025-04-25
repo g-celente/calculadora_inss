@@ -6,12 +6,19 @@
     <title>Simulação INSS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <header>
         <nav id="navbar">
-            <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
+            <div class="nav-logo-container">
+                <a href="{{ url_for('sobre') }}">
+                    <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo">
+                </a>
+                <button id="navicon" aria-label="Abrir menu" class="fa-solid fa-bars"
+                    style="font-size: 24px; background: none; border: none; color: white;"></button>
+            </div>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
                 <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
@@ -43,7 +50,7 @@
         </div>
 
         {% if slbr or sx or cnis_file %}
-        <div class="calculadora">
+        <div class="calculadora2">
             <h2 style="color: #FF4500;">Calculadora de Renda da Previdência do INSS</h2>
             <form action="{{ url_for('gerar_relatorio') }}" method="POST" enctype="multipart/form-data" id="calculadora-form">
                 <div class="custom-select" id="custom-select">
@@ -144,7 +151,7 @@
                 <div class="button-class" style="display: flex;">
                     <button type="submit" name="submit-button" value="1" id="submit-button1">Calcular Benefício INSS</button>
                 
-                    <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
+                    <button type="submit" name="submit-button" value="2" id="submit-button2">Gerar PDF</button>
                     
                     <p style="margin-left: 20px; color: #555555;">Download do relatório “GRP-Análise Previdência”, clique em ‘Gerar PDF’ e aguarde. 
                     </p>
@@ -240,13 +247,17 @@
                 });
             });
         });
+
+        document.getElementById('navicon').addEventListener('click', function () {
+            document.getElementById('nav_list').classList.toggle('show');
+        });
     </script>
     
 </body>
 </html>
 
 <style>
-    .table-responsive {
+.table-responsive {
     display: flex;
     justify-content: center;
     margin-top: 20px;

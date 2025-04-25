@@ -7,13 +7,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
     <header>
         <nav id="navbar">
-            <i class="fa-solid fa-burger" id="navicon">
-                <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
-            </i>
+            <div class="nav-logo-container">
+                <a href="{{ url_for('sobre') }}">
+                    <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo">
+                </a>
+                <button id="navicon" aria-label="Abrir menu" class="fa-solid fa-bars"
+                    style="font-size: 24px; background: none; border: none; color: white;"></button>
+            </div>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
                 <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
@@ -200,7 +205,7 @@
                     
                     <div class="button-class" style="display: flex;">
                         <button type="submit" name="submit-button" value="1" id="submit-button1">CÁLCULO Renda Possível</button>
-                        <button type="submit" name="submit-button" value="2" id="submit-button2" style="margin-left: 20px;">Gerar PDF</button>
+                        <button type="submit" name="submit-button" value="2" id="submit-button2">Gerar PDF</button>
                         <p style="margin-left: 20px; color: #555555;">Desejando o download com o resultado do CÁLCULO, acione o botão ‘Gerar PDF’</p>
                     </div>
     
@@ -250,6 +255,11 @@
         </div>
     </footer>
     
+    <script>
+        document.getElementById('navicon').addEventListener('click', function () {
+            document.getElementById('nav_list').classList.toggle('show');
+        });
+    </script>
     
 </body>
 </html>

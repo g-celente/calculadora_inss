@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulação INSS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="/static/assets/GRP branding.LOGOMARCA.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
+
 <body>
     <header>
         <nav id="navbar">
-            <i class="fa-solid fa-burger" id="navicon">
-                <a href="{{ url_for('sobre') }}"><img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo"></a>
-            </i>
+            <div class="nav-logo-container">
+                <a href="{{ url_for('sobre') }}">
+                    <img src="../static/assets/GRP branding.LOGOMARCA.png" alt="Logo" id="logo">
+                </a>
+                <button id="navicon" aria-label="Abrir menu" class="fa-solid fa-bars"
+                    style="font-size: 24px; background: none; border: none; color: white;"></button>
+            </div>
             <ul id="nav_list">
                 <li class="nav_item"><a href="{{ url_for('sobre') }}">Home</a></li>
                 <li class="nav_item"><a href="{{ url_for('ia') }}">Consulte nossa AI</a></li>
@@ -29,18 +36,21 @@
                     Seja Muito Bem Vindo Ao <br>
                     <span>Sistema de Cálculo GRP</span>
                 </h1>
-                
+
                 <div id="cta_container">
                     <div id="cta_botao">
-                        <a href="{{ url_for('dashboard') }}" class="button"><span>PREVIDÊNCIA PÚBLICA</span> • Calculadora</a>
+                        <a href="{{ url_for('dashboard') }}" class="button"><span>PREVIDÊNCIA PÚBLICA</span> •
+                            Calculadora</a>
                         <button class="info-button" onclick="openModal('previdencia')">?</button>
                     </div>
                     <div id="cta_botao">
-                        <a href="{{ url_for('possivel') }}" class="button"><span>RENDA POSSÍVEL</span> • Previdência + Carteira de Investimentos</a>
+                        <a href="{{ url_for('possivel') }}" class="button"><span>RENDA POSSÍVEL</span> • Previdência +
+                            Carteira de Investimentos</a>
                         <button class="info-button" onclick="openModal('renda-possivel')">?</button>
                     </div>
                     <div id="cta_botao">
-                        <a href="{{ url_for('desejada') }}" class="button"><span>RENDA DESEJADA</span> • Previdência + Carteira de Investimentos</a>
+                        <a href="{{ url_for('desejada') }}" class="button"><span>RENDA DESEJADA</span> • Previdência +
+                            Carteira de Investimentos</a>
                         <button class="info-button" onclick="openModal('renda-desejada')">?</button>
                     </div>
                 </div>
@@ -70,17 +80,20 @@
         </div>
 
         <section id="menu">
-            <h2 class="section-title" style="color: black; font-size: 27px; margin-bottom: 60px;">Como Conseguir o seu CNIS?</h2>
-            <iframe width="1080" height="720" style="margin: auto;"
-                src="https://www.youtube.com/embed/ZSCSkoW3zKQ"
-                title="YouTube video player"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-            </iframe>
+            <h2 class="section-title" style="color: black; font-size: 27px; margin-bottom: 60px;">Como Conseguir o seu
+                CNIS?</h2>
+            <div class="responsive-iframe-container">
+                <iframe src="https://www.youtube.com/embed/ZSCSkoW3zKQ" title="YouTube video player" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
         </section>
         <div class="titulo">
-            <p style="font-size: 18px; font-family: 'Roboto', sans-serif;">"Se você quer ser bem sucedido,<br> precisa ter dedicação total, buscar <br>seu último limite e dar o melhor de si"<br><span><h2 style="color: black;">Ayrton Senna</h2></span></p>
+            <p style="font-size: 18px; font-family: 'Roboto', sans-serif;">"Se você quer ser bem sucedido,<br> precisa
+                ter dedicação total, buscar <br>seu último limite e dar o melhor de si"<br><span>
+                    <h2 style="color: black;">Ayrton Senna</h2>
+                </span></p>
         </div>
     </main>
     <footer class="footer">
@@ -88,7 +101,7 @@
         <div class="footer-logo">
             <img src="/static/assets/GRP branding.LOGOMARCA.png" alt="Logo">
         </div>
-        
+
         <!-- Links Centralizados -->
         <div class="footer-links">
             <a href="https://guiarendaprevidencia.com.br/app-quemsomos/">Quem Somos</a>
@@ -97,13 +110,13 @@
             <a href="https://guiarendaprevidencia.com.br/politicas-de-privacidade-app/">Política de Privacidade</a>
             <a href="https://guiarendaprevidencia.com.br/fale-conosco-app/">Fale Conosco</a>
         </div>
-    
+
         <!-- Direitos Reservados Centralizados -->
         <div class="footer-copyright">
             GRP 2024 © P&D DIGITAL LTDA. Todos os direitos reservados. CNPJ: 44.325.141/0001-50
         </div>
     </footer>
-    
+
 
     <script>
         // Função para abrir o modal
@@ -130,12 +143,19 @@
         }
 
         // Fechar o modal se o usuário clicar fora da janela
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById('infoModal');
             if (event.target === modal) {
                 modal.style.display = 'none';
             }
         }
+
+
+        document.getElementById('navicon').addEventListener('click', function () {
+            document.getElementById('nav_list').classList.toggle('show');
+        });
+
     </script>
 </body>
+
 </html>
