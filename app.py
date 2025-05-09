@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response,  g
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -83,7 +83,13 @@ def token_required(f):
         if not token:
             return redirect(url_for('login'))
         try:
-            jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+
+            g.current_user = User.query.get(data['user_id'])
+        except jwt.ExpiredSignatureError:
+            return redirect(url_for('login'))
+        except jwt.InvalidTokenError:
+            return redirect(url_for('login'))
         except:
             return redirect(url_for('login'))
         return f(*args, **kwargs)
@@ -2614,8 +2620,11 @@ def login():
 
                 if dias_restantes >= 0:
                     # Empresa ainda tem dias de acesso
+                    exp_time = datetime.datetime.utcnow() + datetime.timedelta(hours=120)
+
                     token = jwt.encode({
                         'user_id': user.id,
+                        'exp': exp_time,
                     }, app.config['SECRET_KEY'], algorithm='HS256')
                     response = jsonify({'token': token, 'message': 'Login bem-sucedido!'})
                     response.set_cookie('auth-token', token, httponly=True)
