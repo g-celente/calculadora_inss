@@ -2619,7 +2619,7 @@ def login():
 
                 if dias_restantes >= 0:
                     # Empresa ainda tem dias de acesso
-                    exp_time = datetime.utcnow() + timedelta(hours=120)
+                    exp_time = datetime.utcnow() + timedelta(hours=24)
 
                     token = jwt.encode({
                         'user_id': user.id,
