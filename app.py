@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-import datetime
 from functools import wraps
 import matplotlib.pyplot as plt  # Para gráficos
 import io  # Para manipulação de PDFs e imagens na memória
@@ -2620,7 +2619,7 @@ def login():
 
                 if dias_restantes >= 0:
                     # Empresa ainda tem dias de acesso
-                    exp_time = datetime.datetime.utcnow() + datetime.timedelta(hours=120)
+                    exp_time = datetime.utcnow() + timedelta(hours=120)
 
                     token = jwt.encode({
                         'user_id': user.id,
